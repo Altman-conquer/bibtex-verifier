@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bibtex-verifier"
+version = "0.1.0"
+description = "Verify BibTeX references against OpenAlex & CrossRef APIs to detect errors and AI hallucinations"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+keywords = ["bibtex", "bibliography", "citation", "verification", "academic"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Text Processing :: Markup :: LaTeX",
+    "Intended Audience :: Science/Research",
+    "Development Status :: 4 - Beta",
+]
+dependencies = [
+    "bibtexparser>=1.4",
+    "rapidfuzz>=3.0",
+    "typer>=0.12",
+    "rich>=13.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/bibtex-verifier"
+Issues = "https://github.com/your-username/bibtex-verifier/issues"
+
+[project.scripts]
+bibverify = "bibtex_verifier.cli:app"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-mock>=3.14", "ruff>=0.4"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bibtex_verifier*"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
