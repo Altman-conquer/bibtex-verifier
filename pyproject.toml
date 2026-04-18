@@ -29,8 +29,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/bibtex-verifier"
-Issues = "https://github.com/your-username/bibtex-verifier/issues"
+Homepage = "https://github.com/Altman-conquer/bibtex-verifier"
+Issues = "https://github.com/Altman-conquer/bibtex-verifier/issues"
 
 [project.scripts]
 bibverify = "bibtex_verifier.cli:app"

@@ -1,6 +1,6 @@
 # BibTeX Verifier
 
-[![CI](https://github.com/your-username/bibtex-verifier/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/bibtex-verifier/actions/workflows/ci.yml)
+[![CI](https://github.com/Altman-conquer/bibtex-verifier/actions/workflows/ci.yml/badge.svg)](https://github.com/Altman-conquer/bibtex-verifier/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/bibtex-verifier)](https://pypi.org/project/bibtex-verifier/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -48,7 +48,7 @@ pip install bibtex-verifier
 **From source:**
 
 ```bash
-git clone https://github.com/your-username/bibtex-verifier.git
+git clone https://github.com/Altman-conquer/bibtex-verifier.git
 cd bibtex-verifier
 pip install -e .
 ```
@@ -238,6 +238,7 @@ The generated Markdown report looks like:
 - Coverage: 250M+ works
 - Tip: Providing `--email` enables the [Polite Pool](https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication) with higher rate limits
 
+
 ### CrossRef
 
 - **URL**: [crossref.org](https://www.crossref.org)
@@ -263,7 +264,7 @@ Thresholds control sensitivity. Lowering them may reduce false positives at the 
 
 ```bash
 # Clone and install in development mode
-git clone https://github.com/your-username/bibtex-verifier.git
+git clone https://github.com/Altman-conquer/bibtex-verifier.git
 cd bibtex-verifier
 pip install -e ".[dev]"
 
@@ -329,7 +330,7 @@ If you use this tool in your research, please cite:
 @software{bibtex_verifier2025,
   title   = {BibTeX Verifier: Automatic Reference Validation Against OpenAlex and CrossRef},
   year    = {2025},
-  url     = {https://github.com/your-username/bibtex-verifier},
+  url     = {https://github.com/Altman-conquer/bibtex-verifier},
   license = {MIT},
 }
 ```
