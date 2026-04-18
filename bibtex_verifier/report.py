@@ -2,7 +2,6 @@
 
 import json
 from pathlib import Path
-from typing import Optional
 
 
 def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
