@@ -36,7 +36,7 @@
       </div>
       <div>
         <h1 class="text-lg font-700 text-slate-900 leading-tight">BibTeX Verifier</h1>
-        <p class="text-xs text-slate-500">Detect citation errors &amp; AI hallucinations</p>
+        <p data-i18n="subtitle" class="text-xs text-slate-500">Detect citation errors &amp; AI hallucinations</p>
       </div>
     </div>
     <div class="flex items-center gap-3">
@@ -54,6 +54,11 @@
         </svg>
         GitHub
       </a>
+      <!-- Language toggle -->
+      <button id="lang-toggle" onclick="toggleLang()"
+              class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full font-medium transition-colors">
+        中文
+      </button>
     </div>
   </div>
 </header>
@@ -74,8 +79,8 @@
         </svg>
       </div>
       <div>
-        <p class="text-base font-semibold text-slate-700">Drop your <span class="text-blue-600">.bib</span> file here</p>
-        <p class="text-sm text-slate-400 mt-1">or click to browse — no upload, verified locally in your browser</p>
+        <p data-i18n-html="dropTitleHtml" class="text-base font-semibold text-slate-700">Drop your <span class="text-blue-600">.bib</span> file here</p>
+        <p data-i18n="dropSub" class="text-sm text-slate-400 mt-1">or click to browse — no upload, verified locally in your browser</p>
       </div>
     </div>
     <div id="file-name-badge" class="hidden mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
@@ -93,7 +98,7 @@
         <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
         </svg>
-        Verification Settings
+        <span data-i18n="settingsTitle">Verification Settings</span>
       </div>
       <svg class="w-4 h-4 text-slate-400 details-arrow transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -106,10 +111,10 @@
         <div class="flex items-start justify-between gap-4 mb-3">
           <div>
             <div class="flex items-center gap-2">
-              <span class="text-sm font-semibold text-slate-700">Title Match Threshold</span>
+              <span data-i18n="titleThresholdLabel" class="text-sm font-semibold text-slate-700">Title Match Threshold</span>
               <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-mono rounded-full" id="tt-val">82</span>
             </div>
-            <p class="text-xs text-slate-500 mt-1">
+            <p data-i18n-html="titleThresholdDesc" class="text-xs text-slate-500 mt-1">
               Controls how similar a paper's title in your <code class="bg-slate-200 px-1 rounded">.bib</code> file must be to the title found in the database.
               Uses fuzzy string matching (token sort ratio, 0–100).
             </p>
@@ -118,24 +123,24 @@
         <input type="range" id="title-threshold" min="0" max="100" value="82"
                class="w-full accent-blue-600" oninput="document.getElementById('tt-val').textContent=this.value" />
         <div class="flex justify-between text-xs text-slate-400 mt-1">
-          <span>0 — match anything</span>
-          <span>100 — exact match only</span>
+          <span data-i18n="matchAnything">0 — match anything</span>
+          <span data-i18n="exactMatchOnly">100 — exact match only</span>
         </div>
         <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-center">
           <div class="bg-green-50 border border-green-200 rounded-lg p-2">
             <div class="font-semibold text-green-700">≥ 90</div>
-            <div class="text-slate-500 mt-0.5">Strict<br/>Few false positives</div>
+            <div data-i18n-html="strictDesc" class="text-slate-500 mt-0.5">Strict<br/>Few false positives</div>
           </div>
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 ring-2 ring-blue-300">
-            <div class="font-semibold text-blue-700">82 ← default</div>
-            <div class="text-slate-500 mt-0.5">Balanced<br/>Handles minor typos</div>
+            <div data-i18n="titleDefault" class="font-semibold text-blue-700">82 ← default</div>
+            <div data-i18n-html="balancedDescTitle" class="text-slate-500 mt-0.5">Balanced<br/>Handles minor typos</div>
           </div>
           <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
             <div class="font-semibold text-yellow-700">≤ 70</div>
-            <div class="text-slate-500 mt-0.5">Lenient<br/>More false OKs</div>
+            <div data-i18n-html="lenientDescTitle" class="text-slate-500 mt-0.5">Lenient<br/>More false OKs</div>
           </div>
         </div>
-        <p class="text-xs text-slate-400 mt-2 italic">
+        <p data-i18n="tipSubtitles" class="text-xs text-slate-400 mt-2 italic">
           Tip: if you often cite papers with subtitles or translated titles, lower this to ~75.
         </p>
       </div>
@@ -145,10 +150,10 @@
         <div class="flex items-start justify-between gap-4 mb-3">
           <div>
             <div class="flex items-center gap-2">
-              <span class="text-sm font-semibold text-slate-700">Author Match Threshold</span>
+              <span data-i18n="authorThresholdLabel" class="text-sm font-semibold text-slate-700">Author Match Threshold</span>
               <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-mono rounded-full" id="at-val">72</span>
             </div>
-            <p class="text-xs text-slate-500 mt-1">
+            <p data-i18n-html="authorThresholdDesc" class="text-xs text-slate-500 mt-1">
               Controls how closely the <strong>first author's last name</strong> in your <code class="bg-slate-200 px-1 rounded">.bib</code> must match the database record.
               Only the last name is compared (not first name), using character-level similarity.
             </p>
@@ -157,24 +162,24 @@
         <input type="range" id="author-threshold" min="0" max="100" value="72"
                class="w-full accent-blue-600" oninput="document.getElementById('at-val').textContent=this.value" />
         <div class="flex justify-between text-xs text-slate-400 mt-1">
-          <span>0 — match anything</span>
-          <span>100 — exact match only</span>
+          <span data-i18n="matchAnything">0 — match anything</span>
+          <span data-i18n="exactMatchOnly">100 — exact match only</span>
         </div>
         <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-center">
           <div class="bg-green-50 border border-green-200 rounded-lg p-2">
             <div class="font-semibold text-green-700">≥ 85</div>
-            <div class="text-slate-500 mt-0.5">Strict<br/>Catches all wrong names</div>
+            <div data-i18n-html="authorStrictDesc" class="text-slate-500 mt-0.5">Strict<br/>Catches all wrong names</div>
           </div>
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 ring-2 ring-blue-300">
-            <div class="font-semibold text-blue-700">72 ← default</div>
-            <div class="text-slate-500 mt-0.5">Balanced<br/>Handles romanisation</div>
+            <div data-i18n="authorDefault" class="font-semibold text-blue-700">72 ← default</div>
+            <div data-i18n-html="authorBalancedDesc" class="text-slate-500 mt-0.5">Balanced<br/>Handles romanisation</div>
           </div>
           <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
             <div class="font-semibold text-yellow-700">≤ 60</div>
-            <div class="text-slate-500 mt-0.5">Lenient<br/>May miss wrong authors</div>
+            <div data-i18n-html="authorLenientDesc" class="text-slate-500 mt-0.5">Lenient<br/>May miss wrong authors</div>
           </div>
         </div>
-        <p class="text-xs text-slate-400 mt-2 italic">
+        <p data-i18n="tipRomanisation" class="text-xs text-slate-400 mt-2 italic">
           Tip: for Chinese / Japanese author names with multiple romanisation styles, lower this to ~55.
         </p>
       </div>
@@ -182,28 +187,28 @@
       <!-- Email -->
       <div class="bg-slate-50 rounded-xl p-4">
         <div class="flex items-center gap-2 mb-1">
-          <span class="text-sm font-semibold text-slate-700">Email for API Polite Pool</span>
-          <span class="px-2 py-0.5 bg-slate-200 text-slate-500 text-xs rounded-full">optional</span>
+          <span data-i18n="emailLabel" class="text-sm font-semibold text-slate-700">Email for API Polite Pool</span>
+          <span data-i18n="emailOptional" class="px-2 py-0.5 bg-slate-200 text-slate-500 text-xs rounded-full">optional</span>
         </div>
-        <p class="text-xs text-slate-500 mb-3">
+        <p data-i18n-html="emailDesc" class="text-xs text-slate-500 mb-3">
           OpenAlex provides two access tiers. Adding your email unlocks the <strong>Polite Pool</strong>
           with ~10× higher rate limits, which makes verification significantly faster for large <code class="bg-slate-200 px-1 rounded">.bib</code> files.
         </p>
         <div class="grid grid-cols-2 gap-2 text-xs mb-3">
           <div class="bg-white border border-slate-200 rounded-lg p-2.5">
-            <div class="font-semibold text-slate-600 mb-1">Without email</div>
-            <div class="text-slate-400">~10 requests / second</div>
-            <div class="text-slate-400">Fine for &lt; 30 entries</div>
+            <div data-i18n="withoutEmail" class="font-semibold text-slate-600 mb-1">Without email</div>
+            <div data-i18n="rateWithout" class="text-slate-400">~10 requests / second</div>
+            <div data-i18n="sizeWithout" class="text-slate-400">Fine for &lt; 30 entries</div>
           </div>
           <div class="bg-white border border-blue-200 rounded-lg p-2.5">
-            <div class="font-semibold text-blue-600 mb-1">With email ✓</div>
-            <div class="text-slate-400">~100 requests / second</div>
-            <div class="text-slate-400">Recommended for large files</div>
+            <div data-i18n="withEmail" class="font-semibold text-blue-600 mb-1">With email ✓</div>
+            <div data-i18n="rateWith" class="text-slate-400">~100 requests / second</div>
+            <div data-i18n="sizeWith" class="text-slate-400">Recommended for large files</div>
           </div>
         </div>
         <input type="email" id="polite-email" placeholder="you@university.edu"
                class="w-full border border-slate-200 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
-        <p class="text-xs text-slate-400 mt-2 italic">
+        <p data-i18n-html="emailPrivacy" class="text-xs text-slate-400 mt-2 italic">
           Your email is only sent to OpenAlex as part of the User-Agent header. It is never stored or shared by this tool.
           See <a href="https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication" target="_blank" class="underline hover:text-slate-600">OpenAlex Polite Pool docs</a>.
         </p>
@@ -221,20 +226,20 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
-      Verify References
+      <span id="verify-btn-text" data-i18n="verifyBtn">Verify References</span>
     </button>
   </div>
 
   <!-- Progress -->
   <div id="progress-section" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
     <div class="flex items-center justify-between">
-      <span class="text-sm font-semibold text-slate-700">Verifying…</span>
+      <span data-i18n="verifying" class="text-sm font-semibold text-slate-700">Verifying…</span>
       <span id="progress-label" class="mono text-sm text-slate-500">0 / 0</span>
     </div>
     <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
       <div id="progress-bar" class="progress-bar-inner h-2.5 bg-blue-500 rounded-full" style="width:0%"></div>
     </div>
-    <p id="progress-entry" class="text-xs text-slate-400 truncate">Starting…</p>
+    <p id="progress-entry" class="text-xs text-slate-400 truncate"></p>
   </div>
 
   <!-- Summary -->
@@ -242,19 +247,19 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
       <div class="bg-white rounded-xl border border-green-200 p-4 text-center shadow-sm">
         <div id="cnt-ok" class="text-2xl font-bold text-green-600">0</div>
-        <div class="text-xs text-slate-500 mt-1">✅ OK</div>
+        <div data-i18n="labelOK" class="text-xs text-slate-500 mt-1">✅ OK</div>
       </div>
       <div class="bg-white rounded-xl border border-yellow-200 p-4 text-center shadow-sm">
         <div id="cnt-warn" class="text-2xl font-bold text-yellow-500">0</div>
-        <div class="text-xs text-slate-500 mt-1">⚠️ Warning</div>
+        <div data-i18n="labelWarning" class="text-xs text-slate-500 mt-1">⚠️ Warning</div>
       </div>
       <div class="bg-white rounded-xl border border-red-200 p-4 text-center shadow-sm">
         <div id="cnt-err" class="text-2xl font-bold text-red-500">0</div>
-        <div class="text-xs text-slate-500 mt-1">❌ Error</div>
+        <div data-i18n="labelError" class="text-xs text-slate-500 mt-1">❌ Error</div>
       </div>
       <div class="bg-white rounded-xl border border-slate-200 p-4 text-center shadow-sm">
         <div id="cnt-nf" class="text-2xl font-bold text-slate-400">0</div>
-        <div class="text-xs text-slate-500 mt-1">🔍 Not Found</div>
+        <div data-i18n="labelNotFound" class="text-xs text-slate-500 mt-1">🔍 Not Found</div>
       </div>
     </div>
     <div class="flex justify-center">
@@ -264,7 +269,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
-        Download Markdown Report
+        <span data-i18n="downloadReport">Download Markdown Report</span>
       </button>
     </div>
   </div>
@@ -283,6 +288,215 @@
 </footer>
 
 <script>
+// ─── i18n ─────────────────────────────────────────────────────────────────────
+let currentLang = 'en';
+
+const TRANSLATIONS = {
+  en: {
+    // Header
+    subtitle: 'Detect citation errors & AI hallucinations',
+    // Upload zone
+    dropTitleHtml: 'Drop your <span class="text-blue-600">.bib</span> file here',
+    dropSub: 'or click to browse — no upload, verified locally in your browser',
+    // Settings
+    settingsTitle: 'Verification Settings',
+    titleThresholdLabel: 'Title Match Threshold',
+    titleThresholdDesc: 'Controls how similar a paper\'s title in your <code class="bg-slate-200 px-1 rounded">.bib</code> file must be to the title found in the database. Uses fuzzy string matching (token sort ratio, 0–100).',
+    matchAnything: '0 — match anything',
+    exactMatchOnly: '100 — exact match only',
+    strictDesc: 'Strict<br/>Few false positives',
+    titleDefault: '82 ← default',
+    balancedDescTitle: 'Balanced<br/>Handles minor typos',
+    lenientDescTitle: 'Lenient<br/>More false OKs',
+    tipSubtitles: 'Tip: if you often cite papers with subtitles or translated titles, lower this to ~75.',
+    authorThresholdLabel: 'Author Match Threshold',
+    authorThresholdDesc: 'Controls how closely the <strong>first author\'s last name</strong> in your <code class="bg-slate-200 px-1 rounded">.bib</code> must match the database record. Only the last name is compared (not first name), using character-level similarity.',
+    authorDefault: '72 ← default',
+    authorStrictDesc: 'Strict<br/>Catches all wrong names',
+    authorBalancedDesc: 'Balanced<br/>Handles romanisation',
+    authorLenientDesc: 'Lenient<br/>May miss wrong authors',
+    tipRomanisation: 'Tip: for Chinese / Japanese author names with multiple romanisation styles, lower this to ~55.',
+    emailLabel: 'Email for API Polite Pool',
+    emailOptional: 'optional',
+    emailDesc: 'OpenAlex provides two access tiers. Adding your email unlocks the <strong>Polite Pool</strong> with ~10× higher rate limits, which makes verification significantly faster for large <code class="bg-slate-200 px-1 rounded">.bib</code> files.',
+    withoutEmail: 'Without email',
+    withEmail: 'With email ✓',
+    rateWithout: '~10 requests / second',
+    sizeWithout: 'Fine for < 30 entries',
+    rateWith: '~100 requests / second',
+    sizeWith: 'Recommended for large files',
+    emailPrivacy: 'Your email is only sent to OpenAlex as part of the User-Agent header. It is never stored or shared by this tool. See <a href="https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication" target="_blank" class="underline hover:text-slate-600">OpenAlex Polite Pool docs</a>.',
+    // Buttons & progress
+    verifyBtn: 'Verify References',
+    verifyAgain: 'Verify Again',
+    verifying: 'Verifying…',
+    starting: 'Starting…',
+    done: 'Done!',
+    checking: (key) => `Checking: ${key}`,
+    downloadReport: 'Download Markdown Report',
+    // Summary counts
+    labelOK: '✅ OK',
+    labelWarning: '⚠️ Warning',
+    labelError: '❌ Error',
+    labelNotFound: '🔍 Not Found',
+    // Result card field labels
+    labelAuthors: 'Authors (API):',
+    labelYear: 'Year (API):',
+    labelVenue: 'Venue (API):',
+    labelApiTitle: 'Title (API):',
+    noTitle: '(no title)',
+    // File handling
+    alertBibOnly: 'Please select a .bib file.',
+    entriesBadge: (name, count) => `${name}  ·  ${count} entries`,
+    // Issue messages
+    issueNotFound: 'Paper not found in OpenAlex / CrossRef (possible AI hallucination or severe typo)',
+    issueTitleMismatch: (ts, bibTitle, apiTitle) => `Title mismatch (similarity ${ts}%)\n  bib   : ${bibTitle}\n  actual: ${apiTitle}`,
+    issueYearOff: (diff, bibYear, apiYear) => `Year off by ${diff}: bib=${bibYear}, actual=${apiYear}`,
+    issueYearPreprint: (bibYear, apiYear) => `Year off by 1 (possibly preprint vs. published): bib=${bibYear}, actual=${apiYear}`,
+    issueYearMissing: (apiYear) => `Year field missing in bib; API shows ${apiYear}`,
+    issueAuthorMismatch: (bibFirst, apiFirstLast, as) => `First author last name mismatch: bib="${bibFirst}", actual="${apiFirstLast}" (similarity ${as}%)`,
+    issueAuthorCount: (bibCount, apiCount) => `Fewer authors than actual: bib=${bibCount}, actual=${apiCount}`,
+    // Markdown report
+    reportTitle: '# BibTeX Reference Verification Report',
+    reportFile: (name, count) => `> File: \`${name}.bib\` — ${count} entries`,
+    reportSummary: '## Summary',
+    reportStatusCol: 'Status',
+    reportCountCol: 'Count',
+    reportRowOK: '✅ OK',
+    reportRowWarning: '⚠️ Warning (WARNING)',
+    reportRowError: '❌ Error (ERROR)',
+    reportRowNotFound: '🔍 Not Found (NOT_FOUND)',
+    reportSectionErrors: (n) => `## ❌ Error (${n} ${n === 1 ? 'entry' : 'entries'})`,
+    reportSectionWarnings: (n) => `## ⚠️ Warning (${n} ${n === 1 ? 'entry' : 'entries'})`,
+    reportSectionNotFound: (n) => `## 🔍 Not Found (${n} ${n === 1 ? 'entry' : 'entries'})`,
+    reportSectionOK: (n) => `## ✅ OK (${n} ${n === 1 ? 'entry' : 'entries'})`,
+    reportMatchScore: (score) => `match ${score}%`,
+    reportLabelTitle: '**Title (bib)**:',
+    reportLabelSource: '**Source**:',
+    reportLabelApiTitle: '**Title (API)**:',
+    reportLabelYear: '**Year (API)**:',
+    reportLabelAuthors: '**Authors (API)**:',
+    reportLabelVenue: '**Venue (API)**:',
+    reportLabelIssues: '**Issues**:',
+  },
+  zh: {
+    // Header
+    subtitle: '检测引用错误 & AI 幻觉引用',
+    // Upload zone
+    dropTitleHtml: '将 <span class="text-blue-600">.bib</span> 文件拖放到此处',
+    dropSub: '或点击选择文件 — 不上传，在浏览器本地验证',
+    // Settings
+    settingsTitle: '验证设置',
+    titleThresholdLabel: '标题匹配阈值',
+    titleThresholdDesc: '控制您的 <code class="bg-slate-200 px-1 rounded">.bib</code> 文件中论文标题与数据库中标题的相似度要求。使用模糊字符串匹配算法（token 排序比率，0–100）。',
+    matchAnything: '0 — 匹配任何内容',
+    exactMatchOnly: '100 — 仅精确匹配',
+    strictDesc: '严格<br/>误报率低',
+    titleDefault: '82 ← 默认值',
+    balancedDescTitle: '均衡<br/>容忍轻微拼写错误',
+    lenientDescTitle: '宽松<br/>误判通过率高',
+    tipSubtitles: '提示：如果经常引用有副标题或译名的论文，建议将阈值降低至约 75。',
+    authorThresholdLabel: '作者匹配阈值',
+    authorThresholdDesc: '控制您的 <code class="bg-slate-200 px-1 rounded">.bib</code> 文件中<strong>第一作者姓氏</strong>与数据库记录的匹配程度。仅比较姓氏（不含名字），使用字符级相似度算法。',
+    authorDefault: '72 ← 默认值',
+    authorStrictDesc: '严格<br/>捕获所有错误姓名',
+    authorBalancedDesc: '均衡<br/>兼容多种罗马化拼写',
+    authorLenientDesc: '宽松<br/>可能漏报错误作者',
+    tipRomanisation: '提示：对于有多种罗马化形式的中日文作者姓名，建议将阈值降低至约 55。',
+    emailLabel: 'API 礼貌池邮箱',
+    emailOptional: '可选',
+    emailDesc: 'OpenAlex 提供两种访问级别。填写邮箱可解锁<strong>礼貌池</strong>，速率限制提升约 10 倍，大型 <code class="bg-slate-200 px-1 rounded">.bib</code> 文件的验证速度将显著加快。',
+    withoutEmail: '不填邮箱',
+    withEmail: '填写邮箱 ✓',
+    rateWithout: '约 10 次/秒',
+    sizeWithout: '适用于 30 条以内',
+    rateWith: '约 100 次/秒',
+    sizeWith: '推荐大文件使用',
+    emailPrivacy: '您的邮箱仅作为 User-Agent 请求头的一部分发送给 OpenAlex，本工具不会存储或共享您的邮箱。请参阅 <a href="https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication" target="_blank" class="underline hover:text-slate-600">OpenAlex 礼貌池文档</a>。',
+    // Buttons & progress
+    verifyBtn: '验证引用',
+    verifyAgain: '重新验证',
+    verifying: '验证中…',
+    starting: '正在启动…',
+    done: '完成！',
+    checking: (key) => `正在检查：${key}`,
+    downloadReport: '下载 Markdown 报告',
+    // Summary counts
+    labelOK: '✅ 正常',
+    labelWarning: '⚠️ 警告',
+    labelError: '❌ 错误',
+    labelNotFound: '🔍 未找到',
+    // Result card field labels
+    labelAuthors: '作者 (API):',
+    labelYear: '年份 (API):',
+    labelVenue: '期刊/会议 (API):',
+    labelApiTitle: '标题 (API):',
+    noTitle: '（无标题）',
+    // File handling
+    alertBibOnly: '请选择 .bib 文件。',
+    entriesBadge: (name, count) => `${name}  ·  ${count} 条引用`,
+    // Issue messages
+    issueNotFound: '论文未在 OpenAlex / CrossRef 中找到（可能是 AI 幻觉引用或严重拼写错误）',
+    issueTitleMismatch: (ts, bibTitle, apiTitle) => `标题不匹配 (相似度 ${ts}%)\n  bib : ${bibTitle}\n  实际: ${apiTitle}`,
+    issueYearOff: (diff, bibYear, apiYear) => `年份偏差 ${diff} 年: bib=${bibYear}, 实际=${apiYear}`,
+    issueYearPreprint: (bibYear, apiYear) => `年份偏差 1 年（可能为预印本 vs 正式发表）: bib=${bibYear}, 实际=${apiYear}`,
+    issueYearMissing: (apiYear) => `bib 中缺少年份字段，API 显示为 ${apiYear}`,
+    issueAuthorMismatch: (bibFirst, apiFirstLast, as) => `第一作者姓氏不匹配: bib="${bibFirst}", 实际="${apiFirstLast}" (相似度 ${as}%)`,
+    issueAuthorCount: (bibCount, apiCount) => `作者数量少于实际: bib=${bibCount} 人, 实际=${apiCount} 人`,
+    // Markdown report
+    reportTitle: '# BibTeX 引用验证报告',
+    reportFile: (name, count) => `> 验证文件: \`${name}.bib\`  共 ${count} 条引用`,
+    reportSummary: '## 汇总',
+    reportStatusCol: '状态',
+    reportCountCol: '数量',
+    reportRowOK: '✅ 正常 (OK)',
+    reportRowWarning: '⚠️ 警告 (WARNING)',
+    reportRowError: '❌ 错误 (ERROR)',
+    reportRowNotFound: '🔍 未找到 (NOT_FOUND)',
+    reportSectionErrors: (n) => `## ❌ 错误 (ERROR) (${n} 条)`,
+    reportSectionWarnings: (n) => `## ⚠️ 警告 (WARNING) (${n} 条)`,
+    reportSectionNotFound: (n) => `## 🔍 未找到 (NOT_FOUND) (${n} 条)`,
+    reportSectionOK: (n) => `## ✅ 正常 (OK) (${n} 条)`,
+    reportMatchScore: (score) => `匹配度 ${score}%`,
+    reportLabelTitle: '**标题 (bib)**:',
+    reportLabelSource: '**验证来源**:',
+    reportLabelApiTitle: '**标题 (API)**:',
+    reportLabelYear: '**年份 (API)**:',
+    reportLabelAuthors: '**作者 (API)**:',
+    reportLabelVenue: '**期刊/会议 (API)**:',
+    reportLabelIssues: '**问题**:',
+  }
+};
+
+function t(key, ...args) {
+  const val = TRANSLATIONS[currentLang][key];
+  if (val === undefined) return key;
+  return typeof val === 'function' ? val(...args) : val;
+}
+
+function applyTranslations() {
+  document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+  const toggleBtn = document.getElementById('lang-toggle');
+  if (toggleBtn) toggleBtn.textContent = currentLang === 'en' ? '中文' : 'English';
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  applyTranslations();
+  // Re-render result cards so issue texts and field labels update immediately
+  if (allResults.length) {
+    const el = document.getElementById('results-section');
+    el.innerHTML = '';
+    allResults.forEach(r => el.appendChild(renderCard(r)));
+  }
+}
+
 // ─── State ────────────────────────────────────────────────────────────────────
 let parsedEntries = [];
 let allResults    = [];
@@ -291,7 +505,6 @@ let currentBibName = 'references';
 // ─── BibTeX Parser ────────────────────────────────────────────────────────────
 function parseBib(text) {
   const entries = [];
-  // Match each @type{key, ...} block
   const entryRe = /@(\w+)\s*\{\s*([^,\s]+)\s*,([^@]*)/gi;
   let m;
   while ((m = entryRe.exec(text)) !== null) {
@@ -301,7 +514,6 @@ function parseBib(text) {
     if (type === 'string' || type === 'preamble' || type === 'comment') continue;
 
     const entry = { ENTRYTYPE: type, ID: key };
-    // Parse fields: name = {value} or name = "value" or name = number
     const fieldRe = /(\w+)\s*=\s*(?:\{((?:[^{}]|\{[^{}]*\})*)\}|"([^"]*)"|(\d+))/gi;
     let f;
     while ((f = fieldRe.exec(body)) !== null) {
@@ -424,12 +636,17 @@ function crExtract(msg) {
 }
 
 // ─── Compare ──────────────────────────────────────────────────────────────────
+// Each issue is stored as { key, args, isCritical } so rendering is language-agnostic.
 function compareEntry(bib, apiData, source, matchScore) {
   const titleThreshold  = parseInt(document.getElementById('title-threshold').value);
   const authorThreshold = parseInt(document.getElementById('author-threshold').value);
 
   if (!apiData) {
-    return { status: 'NOT_FOUND', issues: ['论文未在 OpenAlex / CrossRef 中找到（可能是 AI 幻觉引用或严重拼写错误）'], source: null, matchScore: 0, apiData: null };
+    return {
+      status: 'NOT_FOUND',
+      issues: [{ key: 'issueNotFound', args: [], isCritical: false }],
+      source: null, matchScore: 0, apiData: null
+    };
   }
 
   const issues = [];
@@ -438,37 +655,36 @@ function compareEntry(bib, apiData, source, matchScore) {
   if (apiData.title) {
     const ts = tokenSortRatio(normTitle(bib.title || ''), normTitle(apiData.title));
     if (ts < titleThreshold) {
-      issues.push(`标题不匹配 (相似度 ${ts}%)\n  bib : ${bib.title}\n  实际: ${apiData.title}`);
+      issues.push({ key: 'issueTitleMismatch', args: [ts, bib.title, apiData.title], isCritical: true });
     }
   }
 
   // Year
   if (apiData.year && bib.year) {
     const diff = Math.abs(parseInt(bib.year) - parseInt(apiData.year));
-    if (diff > 1)      issues.push(`年份偏差 ${diff} 年: bib=${bib.year}, 实际=${apiData.year}`);
-    else if (diff === 1) issues.push(`年份偏差 1 年（可能为预印本 vs 正式发表）: bib=${bib.year}, 实际=${apiData.year}`);
+    if (diff > 1)      issues.push({ key: 'issueYearOff',      args: [diff, bib.year, apiData.year], isCritical: false });
+    else if (diff === 1) issues.push({ key: 'issueYearPreprint', args: [bib.year, apiData.year],       isCritical: false });
   } else if (apiData.year && !bib.year) {
-    issues.push(`bib 中缺少年份字段，API 显示为 ${apiData.year}`);
+    issues.push({ key: 'issueYearMissing', args: [apiData.year], isCritical: false });
   }
 
   // Author
   if (apiData.authors && apiData.authors.length > 0 && bib.author) {
-    const bibFirst = firstAuthorLastname(bib.author);
+    const bibFirst      = firstAuthorLastname(bib.author);
     const apiFirstParts = apiData.authors[0].split(/\s+/);
     const apiFirstLast  = (apiFirstParts[apiFirstParts.length - 1] || '').toLowerCase();
     const as = simpleRatio(bibFirst, apiFirstLast);
     if (as < authorThreshold) {
-      issues.push(`第一作者姓氏不匹配: bib="${bibFirst}", 实际="${apiFirstLast}" (相似度 ${as}%)`);
+      issues.push({ key: 'issueAuthorMismatch', args: [bibFirst, apiFirstLast, as], isCritical: true });
     }
-    // Count
     const bibCount = bib.author.split(/\s+and\s+/i).length;
     if (apiData.authors.length > bibCount + 1 && !bib.author.toLowerCase().includes('others')) {
-      issues.push(`作者数量少于实际: bib=${bibCount} 人, 实际=${apiData.authors.length} 人`);
+      issues.push({ key: 'issueAuthorCount', args: [bibCount, apiData.authors.length], isCritical: false });
     }
   }
 
-  const critical = issues.filter(i => i.includes('标题') || i.includes('作者姓氏'));
-  const status = critical.length > 0 ? 'ERROR' : issues.length > 0 ? 'WARNING' : 'OK';
+  const critical = issues.filter(i => i.isCritical);
+  const status   = critical.length > 0 ? 'ERROR' : issues.length > 0 ? 'WARNING' : 'OK';
   return { status, issues, source, matchScore, apiData };
 }
 
@@ -487,31 +703,31 @@ function renderCard(result) {
 
   const authorsHtml = ad && ad.authors && ad.authors.length
     ? `<div class="text-xs text-slate-500 mt-0.5">
-         <span class="font-medium text-slate-600">Authors (API):</span>
+         <span class="font-medium text-slate-600">${t('labelAuthors')}</span>
          ${ad.authors.slice(0,4).join(', ')}${ad.authors.length > 4 ? ' …' : ''}
        </div>` : '';
 
   const venueHtml = ad && ad.venue
     ? `<div class="text-xs text-slate-500 mt-0.5">
-         <span class="font-medium text-slate-600">Venue (API):</span> ${ad.venue}
+         <span class="font-medium text-slate-600">${t('labelVenue')}</span> ${ad.venue}
        </div>` : '';
 
   const apiTitleHtml = ad && ad.title && ad.title !== result.bibTitle
     ? `<div class="text-xs text-slate-500 mt-0.5">
-         <span class="font-medium text-slate-600">Title (API):</span> ${ad.title}
+         <span class="font-medium text-slate-600">${t('labelApiTitle')}</span> ${ad.title}
        </div>` : '';
 
   const yearHtml = ad && ad.year
     ? `<div class="text-xs text-slate-500 mt-0.5">
-         <span class="font-medium text-slate-600">Year (API):</span> ${ad.year}
+         <span class="font-medium text-slate-600">${t('labelYear')}</span> ${ad.year}
        </div>` : '';
 
   const issuesHtml = result.issues && result.issues.length
     ? `<div class="mt-3 space-y-1">
-         ${result.issues.map(i => `
+         ${result.issues.map(issue => `
            <div class="flex gap-2 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
              <span class="mt-0.5 shrink-0">⚠</span>
-             <pre class="whitespace-pre-wrap font-sans">${i}</pre>
+             <pre class="whitespace-pre-wrap font-sans">${t(issue.key, ...issue.args)}</pre>
            </div>`).join('')}
        </div>` : '';
 
@@ -529,7 +745,7 @@ function renderCard(result) {
           <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${sc.badge}">${sc.icon} ${result.status}</span>
           ${sourceTag}
         </div>
-        <p class="text-xs text-slate-500 mt-1 line-clamp-2">${result.bibTitle || '(no title)'}</p>
+        <p class="text-xs text-slate-500 mt-1 line-clamp-2">${result.bibTitle || t('noTitle')}</p>
       </div>
     </div>
     ${apiTitleHtml}${yearHtml}${authorsHtml}${venueHtml}${issuesHtml}
@@ -555,47 +771,47 @@ function buildMarkdown(results) {
   const nf  = results.filter(r => r.status === 'NOT_FOUND');
 
   const lines = [
-    '# BibTeX 引用验证报告', '',
-    `> 验证文件: \`${currentBibName}.bib\`  共 ${results.length} 条引用`, '',
-    '## 汇总', '',
-    '| 状态 | 数量 |',
+    t('reportTitle'), '',
+    t('reportFile', currentBibName, results.length), '',
+    t('reportSummary'), '',
+    `| ${t('reportStatusCol')} | ${t('reportCountCol')} |`,
     '|------|------|',
-    `| ✅ 正常 (OK) | ${ok.length} |`,
-    `| ⚠️ 警告 (WARNING) | ${w.length} |`,
-    `| ❌ 错误 (ERROR) | ${e.length} |`,
-    `| 🔍 未找到 (NOT_FOUND) | ${nf.length} |`,
+    `| ${t('reportRowOK')} | ${ok.length} |`,
+    `| ${t('reportRowWarning')} | ${w.length} |`,
+    `| ${t('reportRowError')} | ${e.length} |`,
+    `| ${t('reportRowNotFound')} | ${nf.length} |`,
     '',
   ];
 
-  function section(title, items, icon) {
+  function section(sectionKey, items) {
     if (!items.length) return;
-    lines.push(`## ${icon} ${title} (${items.length} 条)`, '');
+    lines.push(t(sectionKey, items.length), '');
     for (const r of items) {
       lines.push(`### \`${r.key}\``);
-      lines.push(`- **标题 (bib)**: ${r.bibTitle}`);
+      lines.push(`- ${t('reportLabelTitle')} ${r.bibTitle}`);
       if (r.apiData) {
         const src = (r.source || '').toUpperCase();
-        lines.push(`- **验证来源**: ${src} (匹配度 ${r.matchScore}%)`);
-        if (r.apiData.title)   lines.push(`- **标题 (API)**: ${r.apiData.title}`);
-        if (r.apiData.year)    lines.push(`- **年份 (API)**: ${r.apiData.year}`);
+        lines.push(`- ${t('reportLabelSource')} ${src} (${t('reportMatchScore', r.matchScore)})`);
+        if (r.apiData.title)           lines.push(`- ${t('reportLabelApiTitle')} ${r.apiData.title}`);
+        if (r.apiData.year)            lines.push(`- ${t('reportLabelYear')} ${r.apiData.year}`);
         if (r.apiData.authors?.length) {
           const a = r.apiData.authors.slice(0,4).join(', ') + (r.apiData.authors.length > 4 ? ' ...' : '');
-          lines.push(`- **作者 (API)**: ${a}`);
+          lines.push(`- ${t('reportLabelAuthors')} ${a}`);
         }
-        if (r.apiData.venue)   lines.push(`- **期刊/会议 (API)**: ${r.apiData.venue}`);
+        if (r.apiData.venue)           lines.push(`- ${t('reportLabelVenue')} ${r.apiData.venue}`);
       }
       if (r.issues?.length) {
-        lines.push('- **问题**:');
-        r.issues.forEach(i => lines.push(`  - ${i}`));
+        lines.push(`- ${t('reportLabelIssues')}`);
+        r.issues.forEach(issue => lines.push(`  - ${t(issue.key, ...issue.args)}`));
       }
       lines.push('');
     }
   }
 
-  section('错误 (ERROR)', e, '❌');
-  section('警告 (WARNING)', w, '⚠️');
-  section('未找到 (NOT_FOUND)', nf, '🔍');
-  section('正常 (OK)', ok, '✅');
+  section('reportSectionErrors',   e);
+  section('reportSectionWarnings', w);
+  section('reportSectionNotFound', nf);
+  section('reportSectionOK',       ok);
   return lines.join('\n');
 }
 
@@ -621,13 +837,14 @@ async function verifyAll(entries) {
   document.getElementById('progress-section').classList.remove('hidden');
   resultsEl.innerHTML = '';
   allResults = [];
+  progEntry.textContent = t('starting');
 
   for (let i = 0; i < total; i++) {
     const bib = entries[i];
     const key = bib.ID || `entry_${i}`;
 
     progLabel.textContent = `${i + 1} / ${total}`;
-    progEntry.textContent = `Checking: ${key}`;
+    progEntry.textContent = t('checking', key);
     progBar.style.width   = `${Math.round((i / total) * 100)}%`;
 
     let apiData = null, source = null, matchScore = 0;
@@ -657,24 +874,21 @@ async function verifyAll(entries) {
     result.bibTitle = bib.title || '';
     allResults.push(result);
 
-    // Render card immediately
     const card = renderCard(result);
     resultsEl.appendChild(card);
-
-    // Update live summary
     updateSummary(allResults);
 
-    // Rate limit: 200ms between calls
     if (i < total - 1) await new Promise(r => setTimeout(r, 200));
   }
 
   progBar.style.width   = '100%';
   progLabel.textContent = `${total} / ${total}`;
-  progEntry.textContent = 'Done!';
+  progEntry.textContent = t('done');
 
-  // Re-enable button
+  const btnText = document.getElementById('verify-btn-text');
+  btnText.textContent    = t('verifyAgain');
+  btnText.dataset.i18n   = 'verifyAgain';
   document.getElementById('verify-btn').disabled = false;
-  document.getElementById('verify-btn').textContent = 'Verify Again';
 }
 
 async function startVerification() {
@@ -687,7 +901,7 @@ async function startVerification() {
 // ─── File Handling ────────────────────────────────────────────────────────────
 function handleFile(file) {
   if (!file || !file.name.endsWith('.bib')) {
-    alert('Please select a .bib file.');
+    alert(t('alertBibOnly'));
     return;
   }
   currentBibName = file.name.replace(/\.bib$/i, '');
@@ -696,10 +910,13 @@ function handleFile(file) {
     parsedEntries = parseBib(e.target.result);
     const badge   = document.getElementById('file-name-badge');
     const nameEl  = document.getElementById('file-name-text');
-    nameEl.textContent = `${file.name}  ·  ${parsedEntries.length} entries`;
+    nameEl.textContent = t('entriesBadge', file.name, parsedEntries.length);
     badge.classList.remove('hidden');
     document.getElementById('verify-btn').disabled = parsedEntries.length === 0;
-    // Clear old results
+    // Reset the verify button text in case it was changed to "Verify Again"
+    const btnText = document.getElementById('verify-btn-text');
+    btnText.textContent  = t('verifyBtn');
+    btnText.dataset.i18n = 'verifyBtn';
     document.getElementById('results-section').innerHTML = '';
     document.getElementById('summary-section').classList.add('hidden');
     document.getElementById('progress-section').classList.add('hidden');
@@ -726,6 +943,9 @@ zone.addEventListener('drop', e => {
   zone.classList.remove('border-blue-500', 'bg-blue-50');
   handleFile(e.dataTransfer.files[0]);
 });
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+applyTranslations();
 </script>
 
 <script data-goatcounter="https://2476100824.goatcounter.com/count"
