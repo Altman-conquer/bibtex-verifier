@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BibTeX Verifier — Online Reference Checker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    code, .mono { font-family: 'JetBrains Mono', monospace; }
+    .drop-active { @apply border-blue-500 bg-blue-50; }
+    .card-enter { animation: fadeSlideIn 0.3s ease forwards; }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .progress-bar-inner {
+      transition: width 0.4s ease;
+    }
+    details > summary { cursor: pointer; }
+    details > summary::-webkit-details-marker { display: none; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header class="bg-white border-b border-slate-200 shadow-sm">
+  <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-lg font-700 text-slate-900 leading-tight">BibTeX Verifier</h1>
+        <p class="text-xs text-slate-500">Detect citation errors &amp; AI hallucinations</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="https://pypi.org/project/bibtex-verifier/" target="_blank"
+         class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 transition-colors">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        </svg>
+        pip install
+      </a>
+      <a href="https://github.com/Altman-conquer/bibtex-verifier" target="_blank"
+         class="flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition-colors font-medium">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ── Main ────────────────────────────────────────────────────────────────── -->
+<main class="max-w-4xl mx-auto px-6 py-8 space-y-6">
+
+  <!-- Upload zone -->
+  <div id="upload-zone"
+       class="relative border-2 border-dashed border-slate-300 rounded-2xl bg-white p-10 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/40 transition-all duration-200"
+       onclick="document.getElementById('file-input').click()">
+    <input type="file" id="file-input" accept=".bib" class="hidden" />
+    <div class="flex flex-col items-center gap-3 pointer-events-none">
+      <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
+        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-base font-semibold text-slate-700">Drop your <span class="text-blue-600">.bib</span> file here</p>
+        <p class="text-sm text-slate-400 mt-1">or click to browse — no upload, verified locally in your browser</p>
+      </div>
+    </div>
+    <div id="file-name-badge" class="hidden mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <span id="file-name-text"></span>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <details class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" open>
+    <summary class="px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+      <div class="flex items-center gap-2 font-semibold text-slate-700">
+        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+        </svg>
+        Verification Settings
+      </div>
+      <svg class="w-4 h-4 text-slate-400 details-arrow transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </summary>
+    <div class="px-6 pb-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-5 border-t border-slate-100">
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-1.5">
+          Title match threshold
+          <span class="text-slate-400 font-normal">(0–100)</span>
+        </label>
+        <div class="flex items-center gap-3">
+          <input type="range" id="title-threshold" min="0" max="100" value="82"
+                 class="flex-1 accent-blue-600" oninput="document.getElementById('tt-val').textContent=this.value" />
+          <span id="tt-val" class="mono text-sm font-medium text-slate-700 w-8 text-right">82</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Lower = more lenient title matching</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-1.5">
+          Author match threshold
+          <span class="text-slate-400 font-normal">(0–100)</span>
+        </label>
+        <div class="flex items-center gap-3">
+          <input type="range" id="author-threshold" min="0" max="100" value="72"
+                 class="flex-1 accent-blue-600" oninput="document.getElementById('at-val').textContent=this.value" />
+          <span id="at-val" class="mono text-sm font-medium text-slate-700 w-8 text-right">72</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Lower = more lenient author matching</p>
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-slate-600 mb-1.5">
+          Email for API Polite Pool
+          <span class="text-slate-400 font-normal">(optional, enables higher rate limits)</span>
+        </label>
+        <input type="email" id="polite-email" placeholder="you@university.edu"
+               class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
+      </div>
+    </div>
+  </details>
+
+  <!-- Verify button -->
+  <div class="flex justify-center">
+    <button id="verify-btn"
+            class="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+            disabled onclick="startVerification()">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Verify References
+    </button>
+  </div>
+
+  <!-- Progress -->
+  <div id="progress-section" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
+    <div class="flex items-center justify-between">
+      <span class="text-sm font-semibold text-slate-700">Verifying…</span>
+      <span id="progress-label" class="mono text-sm text-slate-500">0 / 0</span>
+    </div>
+    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+      <div id="progress-bar" class="progress-bar-inner h-2.5 bg-blue-500 rounded-full" style="width:0%"></div>
+    </div>
+    <p id="progress-entry" class="text-xs text-slate-400 truncate">Starting…</p>
+  </div>
+
+  <!-- Summary -->
+  <div id="summary-section" class="hidden">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+      <div class="bg-white rounded-xl border border-green-200 p-4 text-center shadow-sm">
+        <div id="cnt-ok" class="text-2xl font-bold text-green-600">0</div>
+        <div class="text-xs text-slate-500 mt-1">✅ OK</div>
+      </div>
+      <div class="bg-white rounded-xl border border-yellow-200 p-4 text-center shadow-sm">
+        <div id="cnt-warn" class="text-2xl font-bold text-yellow-500">0</div>
+        <div class="text-xs text-slate-500 mt-1">⚠️ Warning</div>
+      </div>
+      <div class="bg-white rounded-xl border border-red-200 p-4 text-center shadow-sm">
+        <div id="cnt-err" class="text-2xl font-bold text-red-500">0</div>
+        <div class="text-xs text-slate-500 mt-1">❌ Error</div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 p-4 text-center shadow-sm">
+        <div id="cnt-nf" class="text-2xl font-bold text-slate-400">0</div>
+        <div class="text-xs text-slate-500 mt-1">🔍 Not Found</div>
+      </div>
+    </div>
+    <div class="flex justify-center">
+      <button onclick="downloadReport()"
+              class="flex items-center gap-2 px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl shadow transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Download Markdown Report
+      </button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results-section" class="space-y-3"></div>
+
+</main>
+
+<!-- ── Footer ───────────────────────────────────────────────────────────────── -->
+<footer class="text-center text-xs text-slate-400 py-8">
+  Powered by <a href="https://openalex.org" class="underline hover:text-slate-600">OpenAlex</a>
+  &amp; <a href="https://crossref.org" class="underline hover:text-slate-600">CrossRef</a> APIs
+  · <a href="https://github.com/Altman-conquer/bibtex-verifier" class="underline hover:text-slate-600">Open Source</a>
+  · MIT License
+</footer>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let parsedEntries = [];
+let allResults    = [];
+let currentBibName = 'references';
+
+// ─── BibTeX Parser ────────────────────────────────────────────────────────────
+function parseBib(text) {
+  const entries = [];
+  // Match each @type{key, ...} block
+  const entryRe = /@(\w+)\s*\{\s*([^,\s]+)\s*,([^@]*)/gi;
+  let m;
+  while ((m = entryRe.exec(text)) !== null) {
+    const type   = m[1].toLowerCase();
+    const key    = m[2].trim();
+    const body   = m[3];
+    if (type === 'string' || type === 'preamble' || type === 'comment') continue;
+
+    const entry = { ENTRYTYPE: type, ID: key };
+    // Parse fields: name = {value} or name = "value" or name = number
+    const fieldRe = /(\w+)\s*=\s*(?:\{((?:[^{}]|\{[^{}]*\})*)\}|"([^"]*)"|(\d+))/gi;
+    let f;
+    while ((f = fieldRe.exec(body)) !== null) {
+      const name  = f[1].toLowerCase();
+      const value = (f[2] !== undefined ? f[2] : f[3] !== undefined ? f[3] : f[4] || '').trim();
+      entry[name] = value;
+    }
+    entries.push(entry);
+  }
+  return entries;
+}
+
+// ─── Text Helpers ─────────────────────────────────────────────────────────────
+function normTitle(t) {
+  if (!t) return '';
+  t = t.replace(/\{([^{}]*)\}/g, '$1');
+  t = t.replace(/\\[a-zA-Z]+\s*/g, ' ');
+  t = t.replace(/[^\w\s]/g, ' ');
+  return t.replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function firstAuthorLastname(authorField) {
+  if (!authorField) return '';
+  let first = authorField.split(/\s+and\s+/i)[0].trim();
+  first = first.replace(/\{([^{}]*)\}/g, '$1').replace(/\\[a-zA-Z]+\s*/g, '');
+  if (first.includes(',')) return first.split(',')[0].trim().toLowerCase();
+  const parts = first.trim().split(/\s+/);
+  return (parts[parts.length - 1] || '').toLowerCase();
+}
+
+// ─── Fuzzy Match (token sort ratio approximation) ─────────────────────────────
+function tokenSortRatio(a, b) {
+  if (!a || !b) return 0;
+  const ta = a.split(/\s+/).sort().join(' ');
+  const tb = b.split(/\s+/).sort().join(' ');
+  return Math.round(100 * (1 - levenshtein(ta, tb) / Math.max(ta.length, tb.length, 1)));
+}
+
+function simpleRatio(a, b) {
+  if (!a || !b) return 0;
+  return Math.round(100 * (1 - levenshtein(a, b) / Math.max(a.length, b.length, 1)));
+}
+
+function levenshtein(s, t) {
+  const m = s.length, n = t.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = Array.from({length: m + 1}, (_, i) => Array.from({length: n + 1}, (_, j) => i === 0 ? j : j === 0 ? i : 0));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = s[i-1] === t[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+// ─── API Calls ────────────────────────────────────────────────────────────────
+const OA_URL = 'https://api.openalex.org/works';
+const CR_URL = 'https://api.crossref.org/works/';
+
+async function oaSearch(title, email) {
+  const titleThreshold = parseInt(document.getElementById('title-threshold').value);
+  const params = new URLSearchParams({
+    search: title,
+    'per-page': '5',
+    select: 'title,authorships,publication_year,primary_location,doi'
+  });
+  if (email) params.set('mailto', email);
+  try {
+    const r = await fetch(`${OA_URL}?${params}`);
+    if (!r.ok) return null;
+    const data = await r.json();
+    if (!data.results || data.results.length === 0) return null;
+
+    const normQ = normTitle(title);
+    let best = null, bestScore = 0;
+    for (const paper of data.results) {
+      if (!paper.title) continue;
+      const score = tokenSortRatio(normQ, normTitle(paper.title));
+      if (score > bestScore) { bestScore = score; best = paper; }
+    }
+    if (bestScore < titleThreshold) return null;
+    best._matchScore = bestScore;
+    return best;
+  } catch { return null; }
+}
+
+async function crossrefByDoi(doi) {
+  try {
+    const r = await fetch(`${CR_URL}${encodeURIComponent(doi.trim())}`);
+    if (!r.ok) return null;
+    const data = await r.json();
+    return data.status === 'ok' ? data.message : null;
+  } catch { return null; }
+}
+
+function oaExtract(paper) {
+  const authors = (paper.authorships || [])
+    .map(a => a?.author?.display_name).filter(Boolean);
+  const loc    = paper.primary_location || {};
+  const source = loc.source || {};
+  return {
+    title:   paper.title || '',
+    year:    paper.publication_year || null,
+    authors,
+    venue:   source.display_name || '',
+    doi:     paper.doi || ''
+  };
+}
+
+function crExtract(msg) {
+  const titles = msg.title || [];
+  let year = null;
+  for (const k of ['published-print', 'published-online', 'issued']) {
+    const dp = (msg[k] || {})['date-parts'];
+    if (dp && dp[0] && dp[0][0]) { year = dp[0][0]; break; }
+  }
+  const authors = (msg.author || [])
+    .map(a => `${a.family||''} ${a.given||''}`.trim()).filter(Boolean);
+  const container = msg['container-title'] || [];
+  return { title: titles[0] || '', year, authors, venue: container[0] || '' };
+}
+
+// ─── Compare ──────────────────────────────────────────────────────────────────
+function compareEntry(bib, apiData, source, matchScore) {
+  const titleThreshold  = parseInt(document.getElementById('title-threshold').value);
+  const authorThreshold = parseInt(document.getElementById('author-threshold').value);
+
+  if (!apiData) {
+    return { status: 'NOT_FOUND', issues: ['论文未在 OpenAlex / CrossRef 中找到（可能是 AI 幻觉引用或严重拼写错误）'], source: null, matchScore: 0, apiData: null };
+  }
+
+  const issues = [];
+
+  // Title
+  if (apiData.title) {
+    const ts = tokenSortRatio(normTitle(bib.title || ''), normTitle(apiData.title));
+    if (ts < titleThreshold) {
+      issues.push(`标题不匹配 (相似度 ${ts}%)\n  bib : ${bib.title}\n  实际: ${apiData.title}`);
+    }
+  }
+
+  // Year
+  if (apiData.year && bib.year) {
+    const diff = Math.abs(parseInt(bib.year) - parseInt(apiData.year));
+    if (diff > 1)      issues.push(`年份偏差 ${diff} 年: bib=${bib.year}, 实际=${apiData.year}`);
+    else if (diff === 1) issues.push(`年份偏差 1 年（可能为预印本 vs 正式发表）: bib=${bib.year}, 实际=${apiData.year}`);
+  } else if (apiData.year && !bib.year) {
+    issues.push(`bib 中缺少年份字段，API 显示为 ${apiData.year}`);
+  }
+
+  // Author
+  if (apiData.authors && apiData.authors.length > 0 && bib.author) {
+    const bibFirst = firstAuthorLastname(bib.author);
+    const apiFirstParts = apiData.authors[0].split(/\s+/);
+    const apiFirstLast  = (apiFirstParts[apiFirstParts.length - 1] || '').toLowerCase();
+    const as = simpleRatio(bibFirst, apiFirstLast);
+    if (as < authorThreshold) {
+      issues.push(`第一作者姓氏不匹配: bib="${bibFirst}", 实际="${apiFirstLast}" (相似度 ${as}%)`);
+    }
+    // Count
+    const bibCount = bib.author.split(/\s+and\s+/i).length;
+    if (apiData.authors.length > bibCount + 1 && !bib.author.toLowerCase().includes('others')) {
+      issues.push(`作者数量少于实际: bib=${bibCount} 人, 实际=${apiData.authors.length} 人`);
+    }
+  }
+
+  const critical = issues.filter(i => i.includes('标题') || i.includes('作者姓氏'));
+  const status = critical.length > 0 ? 'ERROR' : issues.length > 0 ? 'WARNING' : 'OK';
+  return { status, issues, source, matchScore, apiData };
+}
+
+// ─── UI Helpers ───────────────────────────────────────────────────────────────
+const STATUS_CLASSES = {
+  OK:        { badge: 'bg-green-100 text-green-700',  border: 'border-green-200',  icon: '✅' },
+  WARNING:   { badge: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-200', icon: '⚠️' },
+  ERROR:     { badge: 'bg-red-100 text-red-700',       border: 'border-red-200',    icon: '❌' },
+  NOT_FOUND: { badge: 'bg-slate-100 text-slate-500',   border: 'border-slate-200',  icon: '🔍' },
+};
+
+function renderCard(result) {
+  const sc    = STATUS_CLASSES[result.status] || STATUS_CLASSES.NOT_FOUND;
+  const ad    = result.apiData;
+  const score = result.matchScore ? `${result.matchScore}%` : '—';
+
+  const authorsHtml = ad && ad.authors && ad.authors.length
+    ? `<div class="text-xs text-slate-500 mt-0.5">
+         <span class="font-medium text-slate-600">Authors (API):</span>
+         ${ad.authors.slice(0,4).join(', ')}${ad.authors.length > 4 ? ' …' : ''}
+       </div>` : '';
+
+  const venueHtml = ad && ad.venue
+    ? `<div class="text-xs text-slate-500 mt-0.5">
+         <span class="font-medium text-slate-600">Venue (API):</span> ${ad.venue}
+       </div>` : '';
+
+  const apiTitleHtml = ad && ad.title && ad.title !== result.bibTitle
+    ? `<div class="text-xs text-slate-500 mt-0.5">
+         <span class="font-medium text-slate-600">Title (API):</span> ${ad.title}
+       </div>` : '';
+
+  const yearHtml = ad && ad.year
+    ? `<div class="text-xs text-slate-500 mt-0.5">
+         <span class="font-medium text-slate-600">Year (API):</span> ${ad.year}
+       </div>` : '';
+
+  const issuesHtml = result.issues && result.issues.length
+    ? `<div class="mt-3 space-y-1">
+         ${result.issues.map(i => `
+           <div class="flex gap-2 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+             <span class="mt-0.5 shrink-0">⚠</span>
+             <pre class="whitespace-pre-wrap font-sans">${i}</pre>
+           </div>`).join('')}
+       </div>` : '';
+
+  const sourceTag = result.source
+    ? `<span class="text-xs text-slate-400 mono">${result.source.toUpperCase()} · score ${score}</span>`
+    : '';
+
+  const div = document.createElement('div');
+  div.className = `card-enter bg-white rounded-xl border ${sc.border} shadow-sm p-5`;
+  div.innerHTML = `
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="mono text-sm font-semibold text-slate-800">${result.key}</span>
+          <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${sc.badge}">${sc.icon} ${result.status}</span>
+          ${sourceTag}
+        </div>
+        <p class="text-xs text-slate-500 mt-1 line-clamp-2">${result.bibTitle || '(no title)'}</p>
+      </div>
+    </div>
+    ${apiTitleHtml}${yearHtml}${authorsHtml}${venueHtml}${issuesHtml}
+  `;
+  return div;
+}
+
+function updateSummary(results) {
+  const counts = { OK: 0, WARNING: 0, ERROR: 0, NOT_FOUND: 0 };
+  results.forEach(r => counts[r.status] = (counts[r.status] || 0) + 1);
+  document.getElementById('cnt-ok').textContent   = counts.OK;
+  document.getElementById('cnt-warn').textContent  = counts.WARNING;
+  document.getElementById('cnt-err').textContent   = counts.ERROR;
+  document.getElementById('cnt-nf').textContent    = counts.NOT_FOUND;
+  document.getElementById('summary-section').classList.remove('hidden');
+}
+
+// ─── Report ───────────────────────────────────────────────────────────────────
+function buildMarkdown(results) {
+  const ok  = results.filter(r => r.status === 'OK');
+  const w   = results.filter(r => r.status === 'WARNING');
+  const e   = results.filter(r => r.status === 'ERROR');
+  const nf  = results.filter(r => r.status === 'NOT_FOUND');
+
+  const lines = [
+    '# BibTeX 引用验证报告', '',
+    `> 验证文件: \`${currentBibName}.bib\`  共 ${results.length} 条引用`, '',
+    '## 汇总', '',
+    '| 状态 | 数量 |',
+    '|------|------|',
+    `| ✅ 正常 (OK) | ${ok.length} |`,
+    `| ⚠️ 警告 (WARNING) | ${w.length} |`,
+    `| ❌ 错误 (ERROR) | ${e.length} |`,
+    `| 🔍 未找到 (NOT_FOUND) | ${nf.length} |`,
+    '',
+  ];
+
+  function section(title, items, icon) {
+    if (!items.length) return;
+    lines.push(`## ${icon} ${title} (${items.length} 条)`, '');
+    for (const r of items) {
+      lines.push(`### \`${r.key}\``);
+      lines.push(`- **标题 (bib)**: ${r.bibTitle}`);
+      if (r.apiData) {
+        const src = (r.source || '').toUpperCase();
+        lines.push(`- **验证来源**: ${src} (匹配度 ${r.matchScore}%)`);
+        if (r.apiData.title)   lines.push(`- **标题 (API)**: ${r.apiData.title}`);
+        if (r.apiData.year)    lines.push(`- **年份 (API)**: ${r.apiData.year}`);
+        if (r.apiData.authors?.length) {
+          const a = r.apiData.authors.slice(0,4).join(', ') + (r.apiData.authors.length > 4 ? ' ...' : '');
+          lines.push(`- **作者 (API)**: ${a}`);
+        }
+        if (r.apiData.venue)   lines.push(`- **期刊/会议 (API)**: ${r.apiData.venue}`);
+      }
+      if (r.issues?.length) {
+        lines.push('- **问题**:');
+        r.issues.forEach(i => lines.push(`  - ${i}`));
+      }
+      lines.push('');
+    }
+  }
+
+  section('错误 (ERROR)', e, '❌');
+  section('警告 (WARNING)', w, '⚠️');
+  section('未找到 (NOT_FOUND)', nf, '🔍');
+  section('正常 (OK)', ok, '✅');
+  return lines.join('\n');
+}
+
+function downloadReport() {
+  const md   = buildMarkdown(allResults);
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `${currentBibName}-verification.md`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ─── Main verification loop ───────────────────────────────────────────────────
+async function verifyAll(entries) {
+  const email     = document.getElementById('polite-email').value.trim();
+  const total     = entries.length;
+  const progBar   = document.getElementById('progress-bar');
+  const progLabel = document.getElementById('progress-label');
+  const progEntry = document.getElementById('progress-entry');
+  const resultsEl = document.getElementById('results-section');
+
+  document.getElementById('progress-section').classList.remove('hidden');
+  resultsEl.innerHTML = '';
+  allResults = [];
+
+  for (let i = 0; i < total; i++) {
+    const bib = entries[i];
+    const key = bib.ID || `entry_${i}`;
+
+    progLabel.textContent = `${i + 1} / ${total}`;
+    progEntry.textContent = `Checking: ${key}`;
+    progBar.style.width   = `${Math.round((i / total) * 100)}%`;
+
+    let apiData = null, source = null, matchScore = 0;
+
+    // 1. CrossRef by DOI
+    if (bib.doi) {
+      const msg = await crossrefByDoi(bib.doi);
+      if (msg) {
+        apiData     = crExtract(msg);
+        source      = 'crossref';
+        matchScore  = tokenSortRatio(normTitle(bib.title || ''), normTitle(apiData.title));
+      }
+    }
+
+    // 2. OpenAlex title search
+    if (!source) {
+      const paper = await oaSearch(bib.title || '', email);
+      if (paper) {
+        source     = 'openalex';
+        matchScore = paper._matchScore;
+        apiData    = oaExtract(paper);
+      }
+    }
+
+    const result = compareEntry(bib, apiData, source, matchScore);
+    result.key      = key;
+    result.bibTitle = bib.title || '';
+    allResults.push(result);
+
+    // Render card immediately
+    const card = renderCard(result);
+    resultsEl.appendChild(card);
+
+    // Update live summary
+    updateSummary(allResults);
+
+    // Rate limit: 200ms between calls
+    if (i < total - 1) await new Promise(r => setTimeout(r, 200));
+  }
+
+  progBar.style.width   = '100%';
+  progLabel.textContent = `${total} / ${total}`;
+  progEntry.textContent = 'Done!';
+
+  // Re-enable button
+  document.getElementById('verify-btn').disabled = false;
+  document.getElementById('verify-btn').textContent = 'Verify Again';
+}
+
+async function startVerification() {
+  if (!parsedEntries.length) return;
+  document.getElementById('verify-btn').disabled = true;
+  document.getElementById('summary-section').classList.add('hidden');
+  await verifyAll(parsedEntries);
+}
+
+// ─── File Handling ────────────────────────────────────────────────────────────
+function handleFile(file) {
+  if (!file || !file.name.endsWith('.bib')) {
+    alert('Please select a .bib file.');
+    return;
+  }
+  currentBibName = file.name.replace(/\.bib$/i, '');
+  const reader   = new FileReader();
+  reader.onload  = e => {
+    parsedEntries = parseBib(e.target.result);
+    const badge   = document.getElementById('file-name-badge');
+    const nameEl  = document.getElementById('file-name-text');
+    nameEl.textContent = `${file.name}  ·  ${parsedEntries.length} entries`;
+    badge.classList.remove('hidden');
+    document.getElementById('verify-btn').disabled = parsedEntries.length === 0;
+    // Clear old results
+    document.getElementById('results-section').innerHTML = '';
+    document.getElementById('summary-section').classList.add('hidden');
+    document.getElementById('progress-section').classList.add('hidden');
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+// File input
+document.getElementById('file-input').addEventListener('change', e => {
+  handleFile(e.target.files[0]);
+});
+
+// Drag-and-drop
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => {
+  e.preventDefault();
+  zone.classList.add('border-blue-500', 'bg-blue-50');
+});
+zone.addEventListener('dragleave', () => {
+  zone.classList.remove('border-blue-500', 'bg-blue-50');
+});
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('border-blue-500', 'bg-blue-50');
+  handleFile(e.dataTransfer.files[0]);
+});
+</script>
+</body>
+</html>
