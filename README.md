@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/Altman-conquer/bibtex-verifier/actions/workflows/ci.yml/badge.svg)](https://github.com/Altman-conquer/bibtex-verifier/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/bibtex-verifier)](https://pypi.org/project/bibtex-verifier/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/bibtex-verifier)](https://pypistats.org/packages/bibtex-verifier)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Online Tool](https://img.shields.io/badge/Online%20Tool-GitHub%20Pages-blueviolet)](https://altman-conquer.github.io/bibtex-verifier/)
