@@ -4,6 +4,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/bibtex-verifier)](https://pypi.org/project/bibtex-verifier/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Online Tool](https://img.shields.io/badge/Online%20Tool-GitHub%20Pages-blueviolet)](https://altman-conquer.github.io/bibtex-verifier/)
 
 **BibTeX Verifier** is an open-source CLI tool that automatically validates every reference in a `.bib` file against two authoritative academic databases — **OpenAlex** and **CrossRef** — to catch typos, wrong years, misattributed authors, and AI-hallucinated citations before they reach your paper.
 
@@ -23,6 +24,16 @@
 | **CLI & Python API** | Use as a command or import as a library |
 | **No registration needed** | OpenAlex is free and open; CrossRef is public |
 | **Rate-limit safe** | Built-in throttling and exponential back-off on HTTP errors |
+
+---
+
+## Online Tool / 在线工具
+
+No installation needed — use the web interface directly:
+
+**[https://altman-conquer.github.io/bibtex-verifier/](https://altman-conquer.github.io/bibtex-verifier/)**
+
+Upload your `.bib` file and get a verification report instantly in your browser. No data is sent to any server — all API calls are made directly from your browser to OpenAlex and CrossRef.
 
 ---
 
@@ -48,7 +59,7 @@ pip install bibtex-verifier
 **From source:**
 
 ```bash
-git clone https://github.com/Altman-conquer/bibtex-verifier.git
+git clone https://github.com/your-username/bibtex-verifier.git
 cd bibtex-verifier
 pip install -e .
 ```
@@ -264,7 +275,7 @@ Thresholds control sensitivity. Lowering them may reduce false positives at the 
 
 ```bash
 # Clone and install in development mode
-git clone https://github.com/Altman-conquer/bibtex-verifier.git
+git clone https://github.com/your-username/bibtex-verifier.git
 cd bibtex-verifier
 pip install -e ".[dev]"
 
@@ -330,7 +341,7 @@ If you use this tool in your research, please cite:
 @software{bibtex_verifier2025,
   title   = {BibTeX Verifier: Automatic Reference Validation Against OpenAlex and CrossRef},
   year    = {2025},
-  url     = {https://github.com/Altman-conquer/bibtex-verifier},
+  url     = {https://github.com/your-username/bibtex-verifier},
   license = {MIT},
 }
 ```
