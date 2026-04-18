@@ -4,7 +4,7 @@ from typing import Optional
 
 from rapidfuzz import fuzz
 
-from bibtex_verifier.apis import extract_first_author_lastname, normalize_title
+from bibtex_verifier.apis import extract_first_author_lastname, normalize_lastname, normalize_title
 
 # Default thresholds (can be overridden per call)
 DEFAULT_TITLE_THRESHOLD = 82
@@ -86,7 +86,7 @@ def compare_entry(
     if api_data.get("authors") and bib_authors:
         bib_first = extract_first_author_lastname(bib_authors)
         api_first_parts = api_data["authors"][0].split()
-        api_first_lastname = api_first_parts[-1].lower() if api_first_parts else ""
+        api_first_lastname = normalize_lastname(api_first_parts[-1]) if api_first_parts else ""
         a_score = fuzz.ratio(bib_first, api_first_lastname)
         if a_score < author_threshold:
             issues.append(

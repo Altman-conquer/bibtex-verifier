@@ -47,7 +47,7 @@ def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
                 ad = r["api_data"]
                 source_label = (r.get("source") or "").upper()
                 lines.append(
-                    f"- **验证来源**: {source_label} (标题匹配度 {r['match_score']}%)"
+                    f"- **验证来源**: {source_label} (标题匹配度 {int(r['match_score'])}%)"
                 )
                 if ad.get("title"):
                     lines.append(f"- **标题 (API)**: {ad['title']}")
@@ -62,7 +62,7 @@ def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
                     lines.append(f"- **发表场所 (API)**: {ad['venue']}")
             elif r.get("source"):
                 lines.append(
-                    f"- **验证来源**: {r['source'].upper()} (标题匹配度 {r['match_score']}%)"
+                    f"- **验证来源**: {r['source'].upper()} (标题匹配度 {int(r['match_score'])}%)"
                 )
             if r.get("issues"):
                 lines.append("- **问题**:")

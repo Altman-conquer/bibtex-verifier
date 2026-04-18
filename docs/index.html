@@ -535,13 +535,20 @@ function normTitle(t) {
   return t.replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
+function normalizeLastname(name) {
+  return name.toLowerCase()
+    .replace(/ß/g, 'ss')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 function firstAuthorLastname(authorField) {
   if (!authorField) return '';
   let first = authorField.split(/\s+and\s+/i)[0].trim();
   first = first.replace(/\{([^{}]*)\}/g, '$1').replace(/\\[a-zA-Z]+\s*/g, '');
-  if (first.includes(',')) return first.split(',')[0].trim().toLowerCase();
+  if (first.includes(',')) return normalizeLastname(first.split(',')[0].trim());
   const parts = first.trim().split(/\s+/);
-  return (parts[parts.length - 1] || '').toLowerCase();
+  return normalizeLastname(parts[parts.length - 1] || '');
 }
 
 // ─── Fuzzy Match (token sort ratio approximation) ─────────────────────────────
@@ -629,8 +636,9 @@ function crExtract(msg) {
     const dp = (msg[k] || {})['date-parts'];
     if (dp && dp[0] && dp[0][0]) { year = dp[0][0]; break; }
   }
+  // Use "Given Family" order so firstAuthorLastname() correctly extracts the family name
   const authors = (msg.author || [])
-    .map(a => `${a.family||''} ${a.given||''}`.trim()).filter(Boolean);
+    .map(a => `${a.given||''} ${a.family||''}`.trim()).filter(Boolean);
   const container = msg['container-title'] || [];
   return { title: titles[0] || '', year, authors, venue: container[0] || '' };
 }
@@ -672,7 +680,7 @@ function compareEntry(bib, apiData, source, matchScore) {
   if (apiData.authors && apiData.authors.length > 0 && bib.author) {
     const bibFirst      = firstAuthorLastname(bib.author);
     const apiFirstParts = apiData.authors[0].split(/\s+/);
-    const apiFirstLast  = (apiFirstParts[apiFirstParts.length - 1] || '').toLowerCase();
+    const apiFirstLast  = normalizeLastname(apiFirstParts[apiFirstParts.length - 1] || '');
     const as = simpleRatio(bibFirst, apiFirstLast);
     if (as < authorThreshold) {
       issues.push({ key: 'issueAuthorMismatch', args: [bibFirst, apiFirstLast, as], isCritical: true });

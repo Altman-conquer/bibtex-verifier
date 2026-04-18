@@ -3,6 +3,7 @@
 import json
 import re
 import time
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -78,15 +79,22 @@ def normalize_title(title: str) -> str:
     return re.sub(r"\s+", " ", title).strip().lower()
 
 
+def normalize_lastname(name: str) -> str:
+    """Normalise a last name for comparison: lowercase, ß→ss, strip diacritics."""
+    name = name.lower().replace("ß", "ss")
+    name = unicodedata.normalize("NFD", name)
+    return "".join(c for c in name if unicodedata.category(c) != "Mn")
+
+
 def extract_first_author_lastname(author_field: str) -> str:
-    """Return the lowercase last name of the first author in a BibTeX author field."""
+    """Return the normalised last name of the first author in a BibTeX author field."""
     first = author_field.split(" and ")[0].strip()
     first = re.sub(r"\{([^{}]*)\}", r"\1", first)
     first = re.sub(r"\\[a-zA-Z]+\s*", "", first)
     if "," in first:
-        return first.split(",")[0].strip().lower()
+        return normalize_lastname(first.split(",")[0].strip())
     parts = first.split()
-    return parts[-1].lower() if parts else ""
+    return normalize_lastname(parts[-1]) if parts else ""
 
 
 # ── OpenAlex API ──────────────────────────────────────────────────────────────
@@ -166,7 +174,7 @@ def crossref_extract(msg: dict) -> dict:
             break
 
     authors = [
-        f"{a.get('family', '')} {a.get('given', '')}".strip()
+        f"{a.get('given', '')} {a.get('family', '')}".strip()
         for a in msg.get("author", [])
     ]
     container = msg.get("container-title", [])

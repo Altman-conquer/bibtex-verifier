@@ -83,5 +83,5 @@ def test_crossref_extract_fields():
     data = crossref_extract(msg)
     assert data["title"] == "Attention Is All You Need"
     assert data["year"] == 2017
-    assert "Vaswani Ashish" in data["authors"]
+    assert "Ashish Vaswani" in data["authors"]
     assert "Advances in Neural" in data["venue"]
