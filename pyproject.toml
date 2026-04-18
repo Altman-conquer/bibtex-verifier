@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bibtex-verifier"
-version = "0.1.0"
+version = "0.1.1"
 description = "Verify BibTeX references against OpenAlex & CrossRef APIs to detect errors and AI hallucinations"
 readme = "README.md"
 license = { text = "MIT" }

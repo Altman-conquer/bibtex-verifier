@@ -11,6 +11,7 @@ build/
 .installed.cfg
 lib/
 lib64/
+tmp/
 
 # Virtual environments
 .venv/
