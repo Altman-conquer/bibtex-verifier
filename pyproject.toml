@@ -22,7 +22,7 @@ classifiers = [
     "Development Status :: 4 - Beta",
 ]
 dependencies = [
-    "bibtexparser>=1.4",
+    "bibtexparser>=1.4,<2",
     "rapidfuzz>=3.0",
     "typer>=0.12",
     "rich>=13.0",
