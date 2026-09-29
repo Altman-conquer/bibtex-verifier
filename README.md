@@ -53,9 +53,20 @@ This generates `my_paper.report.md` with a full verification report.
 
 ## AI Agent Skill / AI 助手核验
 
-This repository includes a [Codex skill](.agents/skills/verify-bibtex/SKILL.md) and a [Claude Code skill](.claude/skills/verify-bibtex/SKILL.md). Other agents that support `SKILL.md` can follow the same instructions. Give your agent this repository URL and your `.bib` file, then ask it to use the `verify-bibtex` skill to set up the local CLI, run verification, and explain the report. After opening the cloned repository, Codex can invoke `$verify-bibtex` and Claude Code can invoke `/verify-bibtex`.
+This repository includes a [Codex skill](.agents/skills/verify-bibtex/SKILL.md) and a [Claude Code skill](.claude/skills/verify-bibtex/SKILL.md). To start from any workspace, attach your `.bib` file (or give an absolute path the agent can read) and send this single prompt to Codex or Claude Code:
 
-OpenAlex keys are **not bundled**. The agent uses your existing `OPENALEX_API_KEY` environment variable or asks you to configure your own key; it must never save the key in the repository or report. Without a key, OpenAlex may rate-limit the run. A repository link alone also cannot supply the bibliography to check.
+```text
+请用 https://github.com/Altman-conquer/bibtex-verifier 的 verify-bibtex skill 检查我提供的 paper.bib。请克隆仓库并读取对应的 SKILL.md，安装当前仓库版本，运行核验，给出报告路径、各状态数量和每条异常的具体原因。如果没有 OPENALEX_API_KEY，请让我在本机配置；不要保存或显示 key。
+```
+
+If you have already cloned the repository, start the agent from its root directory and invoke the skill directly:
+
+| Agent | Prompt |
+|---|---|
+| Codex | `$verify-bibtex 检查 /absolute/path/paper.bib` |
+| Claude Code | `/verify-bibtex /absolute/path/paper.bib` |
+
+OpenAlex keys are **not bundled**. To make a key available to the agent, export `OPENALEX_API_KEY` in the same terminal **before starting Codex or Claude Code** (see below), or let the agent ask you to configure it. Without a key, OpenAlex may rate-limit the run. A repository link alone cannot supply your bibliography or API key.
 
 ---
 
@@ -93,6 +104,8 @@ pip install -e .
    bibverify paper.bib --json
    unset OPENALEX_API_KEY
    ```
+
+   To use the agent skill, start `codex` or `claude` from this same shell after `export OPENALEX_API_KEY`, instead of running `bibverify` directly. Run `unset OPENALEX_API_KEY` after leaving the agent.
 
 3. For the [online tool](https://altman-conquer.github.io/bibtex-verifier/), enter the key in its **OpenAlex API key** field before verification. The page sends it to OpenAlex and does not save it.
 
