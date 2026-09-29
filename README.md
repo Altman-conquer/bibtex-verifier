@@ -173,7 +173,7 @@ Use `bibverify paper.bib --json` for the complete multi-source verification chai
 ## Sample Output / 输出示例
 
 ```
-BibTeX Verifier v0.1.1
+BibTeX Verifier v0.2.0
 Parsing paper.bib ...
 Found 8 entries
 
