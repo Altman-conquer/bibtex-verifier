@@ -78,7 +78,7 @@ OpenAlex keys are **not bundled**. To make a key available to the agent, export 
 pip install bibtex-verifier
 ```
 
-The PyPI release may lag behind the GitHub source. Use the source installation for the latest OpenAlex key support and agent skills.
+PyPI `0.2.0` includes OpenAlex key support and the latest CLI checks. Clone the repository to use its Codex and Claude Code skills.
 
 **From source:**
 
