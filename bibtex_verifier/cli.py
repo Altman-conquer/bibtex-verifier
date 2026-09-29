@@ -12,8 +12,11 @@ from rich.table import Table
 from bibtex_verifier import __version__
 from bibtex_verifier.apis import (
     OA_RATE_LIMIT,
+    ApiRequestError,
     crossref_by_doi,
     crossref_extract,
+    datacite_by_doi,
+    datacite_extract,
     normalize_title,
     oa_extract,
     oa_search,
@@ -25,7 +28,7 @@ from bibtex_verifier.report import save_report
 
 app = typer.Typer(
     name="bibverify",
-    help="Verify BibTeX references against OpenAlex & CrossRef to detect errors and AI hallucinations.",
+    help="Check BibTeX metadata against CrossRef, DataCite and OpenAlex.",
     add_completion=False,
 )
 console = Console()
@@ -35,6 +38,7 @@ STATUS_STYLE = {
     "WARNING": "[yellow]WARN  [/yellow]",
     "ERROR": "[red]ERR   [/red]",
     "NOT_FOUND": "[dim]N/F   [/dim]",
+    "UNVERIFIED": "[yellow]N/A   [/yellow]",
 }
 
 
@@ -60,7 +64,7 @@ def verify(
     email: Optional[str] = typer.Option(
         None,
         "--email",
-        help="Email address for OpenAlex/CrossRef Polite Pool (enables higher rate limits)",
+        help="Contact email for API requests (OpenAlex searches need OPENALEX_API_KEY for reliable usage)",
     ),
     rate_limit: float = typer.Option(
         OA_RATE_LIMIT, "--rate-limit", help="Seconds to wait between API calls"
@@ -88,10 +92,7 @@ def verify(
         console.print("[yellow]No entries found in the .bib file.[/yellow]")
         raise typer.Exit(0)
 
-    eta = len(entries) * (rate_limit + 0.5)
-    console.print(
-        f"Found [bold]{len(entries)}[/bold] entries — estimated time: ~{eta:.0f}s\n"
-    )
+    console.print(f"Found [bold]{len(entries)}[/bold] entries\n")
 
     # ── Verify ────────────────────────────────────────────────────────────────
     results: list[dict] = []
@@ -109,24 +110,41 @@ def verify(
         api_data = None
         source = None
         match_score = 0
+        api_errors = []
 
         # 1. Try CrossRef by DOI first
         if bib_doi:
-            cr_msg = crossref_by_doi(bib_doi)
-            if cr_msg:
-                api_data = crossref_extract(cr_msg)
-                source = "crossref"
-                match_score = fuzz.token_sort_ratio(
-                    normalize_title(bib_title), normalize_title(api_data["title"])
-                )
+            for name, lookup, extract in (
+                ("CrossRef", crossref_by_doi, crossref_extract),
+                ("DataCite", datacite_by_doi, datacite_extract),
+            ):
+                try:
+                    record = lookup(bib_doi)
+                except ApiRequestError as exc:
+                    api_errors.append(f"{name}: {exc}")
+                    continue
+                if record:
+                    api_data = extract(record)
+                    source = name.lower()
+                    match_score = fuzz.token_sort_ratio(
+                        normalize_title(bib_title), normalize_title(api_data["title"])
+                    )
+                    break
 
         # 2. Fall back to OpenAlex title search
-        if source is None:
-            oa_paper = oa_search(bib_title)
-            if oa_paper:
-                source = "openalex"
-                match_score = oa_paper.get("_match_score", 0)
-                api_data = oa_extract(oa_paper)
+        if source is None and bib_title:
+            try:
+                oa_paper = oa_search(bib_title, threshold=title_threshold)
+            except ApiRequestError as exc:
+                api_errors.append(f"OpenAlex: {exc}")
+            else:
+                if oa_paper:
+                    source = "openalex"
+                    match_score = oa_paper.get("_match_score", 0)
+                    api_data = oa_extract(oa_paper)
+
+        if source is None and not bib_title and not bib_doi:
+            api_errors.append("缺少标题和 DOI，无法检索")
 
         result = compare_entry(
             entry,
@@ -135,6 +153,7 @@ def verify(
             match_score=match_score,
             title_threshold=title_threshold,
             author_threshold=author_threshold,
+            api_errors=api_errors,
         )
         results.append(result)
 
@@ -164,6 +183,7 @@ def verify(
     warn = sum(1 for r in results if r["status"] == "WARNING")
     err = sum(1 for r in results if r["status"] == "ERROR")
     nf = sum(1 for r in results if r["status"] == "NOT_FOUND")
+    unverified = sum(1 for r in results if r["status"] == "UNVERIFIED")
 
     table = Table(title="\nVerification Summary", show_header=True)
     table.add_column("Status", style="bold")
@@ -172,7 +192,8 @@ def verify(
     table.add_row("[yellow]⚠️  WARNING[/yellow]", f"[yellow]{warn}[/yellow]")
     table.add_row("[red]❌ ERROR[/red]", f"[red]{err}[/red]")
     table.add_row("[dim]🔍 NOT_FOUND[/dim]", f"[dim]{nf}[/dim]")
+    table.add_row("[yellow]⏳ UNVERIFIED[/yellow]", f"[yellow]{unverified}[/yellow]")
     console.print(table)
 
-    if err + nf > 0:
+    if err + nf + unverified > 0:
         raise typer.Exit(1)

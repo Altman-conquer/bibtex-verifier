@@ -2,7 +2,10 @@
 
 from unittest.mock import patch
 
+import pytest
+
 from bibtex_verifier.apis import (
+    ApiRequestError,
     crossref_by_doi,
     crossref_extract,
     normalize_title,
@@ -48,10 +51,10 @@ def test_oa_search_returns_none_on_empty_results():
     assert result is None
 
 
-def test_oa_search_returns_none_on_api_failure():
+def test_oa_search_reports_api_failure():
     with patch("bibtex_verifier.apis.http_get", return_value=None):
-        result = oa_search("Attention Is All You Need")
-    assert result is None
+        with pytest.raises(ApiRequestError):
+            oa_search("Attention Is All You Need")
 
 
 def test_oa_extract_fields():

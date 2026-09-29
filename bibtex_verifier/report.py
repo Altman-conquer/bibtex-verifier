@@ -18,6 +18,7 @@ def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
     warnings = [r for r in results if r["status"] == "WARNING"]
     errors = [r for r in results if r["status"] == "ERROR"]
     not_found = [r for r in results if r["status"] == "NOT_FOUND"]
+    unverified = [r for r in results if r["status"] == "UNVERIFIED"]
 
     lines: list[str] = [
         "# BibTeX 引用验证报告",
@@ -32,6 +33,7 @@ def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
         f"| ⚠️ 警告 (WARNING) | {len(warnings)} |",
         f"| ❌ 错误 (ERROR) | {len(errors)} |",
         f"| 🔍 未找到 (NOT_FOUND) | {len(not_found)} |",
+        f"| ⏳ 未完成核验 (UNVERIFIED) | {len(unverified)} |",
         "",
     ]
 
@@ -75,6 +77,7 @@ def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
     _section("错误 (ERROR)", errors, "❌")
     _section("警告 (WARNING)", warnings, "⚠️")
     _section("未找到 (NOT_FOUND)", not_found, "🔍")
+    _section("未完成核验 (UNVERIFIED)", unverified, "⏳")
     _section("正常 (OK)", ok, "✅")
 
     return "\n".join(lines)
@@ -110,4 +113,5 @@ def print_summary(results: list[dict]) -> None:
     warn = sum(1 for r in results if r["status"] == "WARNING")
     err = sum(1 for r in results if r["status"] == "ERROR")
     nf = sum(1 for r in results if r["status"] == "NOT_FOUND")
-    print(f"\n统计: OK={ok}  WARN={warn}  ERR={err}  NOT_FOUND={nf}")
+    unverified = sum(1 for r in results if r["status"] == "UNVERIFIED")
+    print(f"\n统计: OK={ok}  WARN={warn}  ERR={err}  NOT_FOUND={nf}  UNVERIFIED={unverified}")

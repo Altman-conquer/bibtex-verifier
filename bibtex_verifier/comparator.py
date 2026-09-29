@@ -1,10 +1,11 @@
 """Field-level comparison between BibTeX entries and API data."""
 
+import re
 from typing import Optional
 
 from rapidfuzz import fuzz
 
-from bibtex_verifier.apis import extract_first_author_lastname, normalize_lastname, normalize_title
+from bibtex_verifier.apis import extract_first_author_lastname, normalize_title
 
 # Default thresholds (can be overridden per call)
 DEFAULT_TITLE_THRESHOLD = 82
@@ -19,6 +20,7 @@ def compare_entry(
     match_score: int,
     title_threshold: int = DEFAULT_TITLE_THRESHOLD,
     author_threshold: int = DEFAULT_AUTHOR_THRESHOLD,
+    api_errors: Optional[list[str]] = None,
 ) -> dict:
     """Compare a single BibTeX entry against API-retrieved data.
 
@@ -43,8 +45,8 @@ def compare_entry(
     if api_data is None:
         return {
             "key": key,
-            "status": "NOT_FOUND",
-            "issues": ["在 OpenAlex / CrossRef 中未找到匹配论文（标题相似度不足）"],
+            "status": "UNVERIFIED" if api_errors else "NOT_FOUND",
+            "issues": [f"未完成核验：{'; '.join(api_errors)}"] if api_errors else ["已完成的数据库检索中未找到匹配记录；建议人工核查"],
             "source": None,
             "match_score": 0,
             "bib_title": bib_title,
@@ -85,16 +87,21 @@ def compare_entry(
     # ── First-author last name ────────────────────────────────────────────────
     if api_data.get("authors") and bib_authors:
         bib_first = extract_first_author_lastname(bib_authors)
-        api_first_parts = api_data["authors"][0].split()
-        api_first_lastname = normalize_lastname(api_first_parts[-1]) if api_first_parts else ""
+        api_first_lastname = extract_first_author_lastname(api_data["authors"][0])
         a_score = fuzz.ratio(bib_first, api_first_lastname)
         if a_score < author_threshold:
-            issues.append(
-                f"第一作者姓氏不匹配: bib={bib_first!r}, 实际={api_first_lastname!r} (相似度 {a_score}%)"
-            )
+            if any(
+                extract_first_author_lastname(name) == bib_first
+                for name in api_data["authors"][1:]
+            ):
+                issues.append("数据库第一作者与 bib 不同，但 bib 第一作者见于数据库作者列表（可能为团队署名或版本差异）")
+            else:
+                issues.append(
+                    f"第一作者姓氏不匹配: bib={bib_first!r}, 实际={api_first_lastname!r} (相似度 {a_score}%)"
+                )
 
         # ── Author count ──────────────────────────────────────────────────────
-        bib_count = len(bib_authors.split(" and "))
+        bib_count = len(re.split(r"\s+and\s+", bib_authors, flags=re.I))
         api_count = len(api_data["authors"])
         if api_count > bib_count + 1 and "others" not in bib_authors.lower():
             issues.append(

@@ -93,6 +93,15 @@
     </div>
   </div>
 
+  <!-- Paste BibTeX without saving a temporary file -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+    <label for="bib-paste" data-i18n="pasteLabel" class="block text-sm font-semibold text-slate-700">Or paste BibTeX</label>
+    <textarea id="bib-paste" rows="4" data-i18n-placeholder="pastePlaceholder" placeholder="@article{key, title={...}, ...}"
+              class="w-full border border-slate-200 rounded-lg p-3 text-sm mono focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
+    <button type="button" id="paste-btn" data-i18n="pasteButton"
+            class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg">Use pasted entries</button>
+  </div>
+
   <!-- Settings -->
   <details class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" open>
     <summary class="px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
@@ -186,34 +195,13 @@
         </p>
       </div>
 
-      <!-- Email -->
+      <!-- OpenAlex key stays in this tab and is sent only to OpenAlex -->
       <div class="bg-slate-50 rounded-xl p-4">
-        <div class="flex items-center gap-2 mb-1">
-          <span data-i18n="emailLabel" class="text-sm font-semibold text-slate-700">Email for API Polite Pool</span>
-          <span data-i18n="emailOptional" class="px-2 py-0.5 bg-slate-200 text-slate-500 text-xs rounded-full">optional</span>
-        </div>
-        <p data-i18n-html="emailDesc" class="text-xs text-slate-500 mb-3">
-          OpenAlex provides two access tiers. Adding your email unlocks the <strong>Polite Pool</strong>
-          with ~10× higher rate limits, which makes verification significantly faster for large <code class="bg-slate-200 px-1 rounded">.bib</code> files.
-        </p>
-        <div class="grid grid-cols-2 gap-2 text-xs mb-3">
-          <div class="bg-white border border-slate-200 rounded-lg p-2.5">
-            <div data-i18n="withoutEmail" class="font-semibold text-slate-600 mb-1">Without email</div>
-            <div data-i18n="rateWithout" class="text-slate-400">~10 requests / second</div>
-            <div data-i18n="sizeWithout" class="text-slate-400">Fine for &lt; 30 entries</div>
-          </div>
-          <div class="bg-white border border-blue-200 rounded-lg p-2.5">
-            <div data-i18n="withEmail" class="font-semibold text-blue-600 mb-1">With email ✓</div>
-            <div data-i18n="rateWith" class="text-slate-400">~100 requests / second</div>
-            <div data-i18n="sizeWith" class="text-slate-400">Recommended for large files</div>
-          </div>
-        </div>
-        <input type="email" id="polite-email" placeholder="you@university.edu"
+        <label for="openalex-key" data-i18n="apiKeyLabel" class="text-sm font-semibold text-slate-700">OpenAlex API key (recommended)</label>
+        <p data-i18n="apiKeyDesc" class="text-xs text-slate-500 my-2">Get a free key in your OpenAlex account; anonymous searches may be rate-limited.</p>
+        <input type="password" id="openalex-key" autocomplete="off" placeholder="OpenAlex API key"
                class="w-full border border-slate-200 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
-        <p data-i18n-html="emailPrivacy" class="text-xs text-slate-400 mt-2 italic">
-          Your email is only sent to OpenAlex as part of the User-Agent header. It is never stored or shared by this tool.
-          See <a href="https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication" target="_blank" class="underline hover:text-slate-600">OpenAlex Polite Pool docs</a>.
-        </p>
+        <p data-i18n="apiKeyPrivacy" class="text-xs text-slate-400 mt-2">The key is sent only to OpenAlex and is not saved by this page.</p>
       </div>
 
     </div>
@@ -246,7 +234,7 @@
 
   <!-- Summary -->
   <div id="summary-section" class="hidden">
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
       <div class="bg-white rounded-xl border border-green-200 p-4 text-center shadow-sm">
         <div id="cnt-ok" class="text-2xl font-bold text-green-600">0</div>
         <div data-i18n="labelOK" class="text-xs text-slate-500 mt-1">✅ OK</div>
@@ -262,6 +250,10 @@
       <div class="bg-white rounded-xl border border-slate-200 p-4 text-center shadow-sm">
         <div id="cnt-nf" class="text-2xl font-bold text-slate-400">0</div>
         <div data-i18n="labelNotFound" class="text-xs text-slate-500 mt-1">🔍 Not Found</div>
+      </div>
+      <div class="bg-white rounded-xl border border-amber-200 p-4 text-center shadow-sm">
+        <div id="cnt-unverified" class="text-2xl font-bold text-amber-600">0</div>
+        <div data-i18n="labelUnverified" class="text-xs text-slate-500 mt-1">⏳ Unverified</div>
       </div>
     </div>
     <div class="flex justify-center">
@@ -284,7 +276,8 @@
 <!-- ── Footer ───────────────────────────────────────────────────────────────── -->
 <footer class="text-center text-xs text-slate-400 py-8">
   Powered by <a href="https://openalex.org" class="underline hover:text-slate-600">OpenAlex</a>
-  &amp; <a href="https://crossref.org" class="underline hover:text-slate-600">CrossRef</a> APIs
+  · <a href="https://crossref.org" class="underline hover:text-slate-600">CrossRef</a>
+  · <a href="https://datacite.org" class="underline hover:text-slate-600">DataCite</a> APIs
   · <a href="https://github.com/Altman-conquer/bibtex-verifier" class="underline hover:text-slate-600">Open Source</a>
   · MIT License
 </footer>
@@ -300,6 +293,9 @@ const TRANSLATIONS = {
     // Upload zone
     dropTitleHtml: 'Drop your <span class="text-blue-600">.bib</span> file here',
     dropSub: 'or click to browse — no upload, verified locally in your browser',
+    pasteLabel: 'Or paste BibTeX',
+    pastePlaceholder: '@article{key, title={...}, ...}',
+    pasteButton: 'Use pasted entries',
     // Settings
     settingsTitle: 'Verification Settings',
     titleThresholdLabel: 'Title Match Threshold',
@@ -318,16 +314,9 @@ const TRANSLATIONS = {
     authorBalancedDesc: 'Balanced<br/>Handles romanisation',
     authorLenientDesc: 'Lenient<br/>May miss wrong authors',
     tipRomanisation: 'Tip: for Chinese / Japanese author names with multiple romanisation styles, lower this to ~55.',
-    emailLabel: 'Email for API Polite Pool',
-    emailOptional: 'optional',
-    emailDesc: 'OpenAlex provides two access tiers. Adding your email unlocks the <strong>Polite Pool</strong> with ~10× higher rate limits, which makes verification significantly faster for large <code class="bg-slate-200 px-1 rounded">.bib</code> files.',
-    withoutEmail: 'Without email',
-    withEmail: 'With email ✓',
-    rateWithout: '~10 requests / second',
-    sizeWithout: 'Fine for < 30 entries',
-    rateWith: '~100 requests / second',
-    sizeWith: 'Recommended for large files',
-    emailPrivacy: 'Your email is only sent to OpenAlex as part of the User-Agent header. It is never stored or shared by this tool. See <a href="https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication" target="_blank" class="underline hover:text-slate-600">OpenAlex Polite Pool docs</a>.',
+    apiKeyLabel: 'OpenAlex API key (recommended)',
+    apiKeyDesc: 'Get a free key in your OpenAlex account; anonymous searches may be rate-limited.',
+    apiKeyPrivacy: 'The key is sent only to OpenAlex and is not saved by this page.',
     // Buttons & progress
     verifyBtn: 'Verify References',
     verifyAgain: 'Verify Again',
@@ -341,6 +330,7 @@ const TRANSLATIONS = {
     labelWarning: '⚠️ Warning',
     labelError: '❌ Error',
     labelNotFound: '🔍 Not Found',
+    labelUnverified: '⏳ Unverified',
     // Result card field labels
     labelAuthors: 'Authors (API):',
     labelYear: 'Year (API):',
@@ -349,15 +339,18 @@ const TRANSLATIONS = {
     noTitle: '(no title)',
     // File handling
     alertBibOnly: 'Please select a .bib file.',
+    alertPasteEmpty: 'Paste BibTeX content first.',
     entriesBadge: (name, count) => `${name}  ·  ${count} entries`,
     // Issue messages
-    issueNotFound: 'Paper not found in OpenAlex / CrossRef (possible AI hallucination or severe typo)',
+    issueNotFound: 'No matching record in the sources queried; check manually',
+    issueUnverified: (reason) => `Verification incomplete: ${reason}`,
     issueTitleMismatch: (ts, bibTitle, apiTitle) => `Title mismatch (similarity ${ts}%)\n  bib   : ${bibTitle}\n  actual: ${apiTitle}`,
     issueYearOff: (diff, bibYear, apiYear) => `Year off by ${diff}: bib=${bibYear}, actual=${apiYear}`,
     issueYearPreprint: (bibYear, apiYear) => `Year off by 1 (possibly preprint vs. published): bib=${bibYear}, actual=${apiYear}`,
     issueYearMissing: (apiYear) => `Year field missing in bib; API shows ${apiYear}`,
     issueAuthorMismatch: (bibFirst, apiFirstLast, as) => `First author last name mismatch: bib="${bibFirst}", actual="${apiFirstLast}" (similarity ${as}%)`,
     issueAuthorCount: (bibCount, apiCount) => `Fewer authors than actual: bib=${bibCount}, actual=${apiCount}`,
+    issueAuthorOrder: 'Bib first author appears elsewhere in the database author list (possibly team attribution or a different version)',
     // Markdown report
     reportTitle: '# BibTeX Reference Verification Report',
     reportFile: (name, count) => `> File: \`${name}.bib\` — ${count} entries`,
@@ -368,9 +361,11 @@ const TRANSLATIONS = {
     reportRowWarning: '⚠️ Warning (WARNING)',
     reportRowError: '❌ Error (ERROR)',
     reportRowNotFound: '🔍 Not Found (NOT_FOUND)',
+    reportRowUnverified: '⏳ Unverified (UNVERIFIED)',
     reportSectionErrors: (n) => `## ❌ Error (${n} ${n === 1 ? 'entry' : 'entries'})`,
     reportSectionWarnings: (n) => `## ⚠️ Warning (${n} ${n === 1 ? 'entry' : 'entries'})`,
     reportSectionNotFound: (n) => `## 🔍 Not Found (${n} ${n === 1 ? 'entry' : 'entries'})`,
+    reportSectionUnverified: (n) => `## ⏳ Unverified (${n} ${n === 1 ? 'entry' : 'entries'})`,
     reportSectionOK: (n) => `## ✅ OK (${n} ${n === 1 ? 'entry' : 'entries'})`,
     reportMatchScore: (score) => `match ${score}%`,
     reportLabelTitle: '**Title (bib)**:',
@@ -387,6 +382,9 @@ const TRANSLATIONS = {
     // Upload zone
     dropTitleHtml: '将 <span class="text-blue-600">.bib</span> 文件拖放到此处',
     dropSub: '或点击选择文件 — 不上传，在浏览器本地验证',
+    pasteLabel: '或直接粘贴 BibTeX',
+    pastePlaceholder: '@article{key, title={...}, ...}',
+    pasteButton: '使用粘贴的内容',
     // Settings
     settingsTitle: '验证设置',
     titleThresholdLabel: '标题匹配阈值',
@@ -405,16 +403,9 @@ const TRANSLATIONS = {
     authorBalancedDesc: '均衡<br/>兼容多种罗马化拼写',
     authorLenientDesc: '宽松<br/>可能漏报错误作者',
     tipRomanisation: '提示：对于有多种罗马化形式的中日文作者姓名，建议将阈值降低至约 55。',
-    emailLabel: 'API 礼貌池邮箱',
-    emailOptional: '可选',
-    emailDesc: 'OpenAlex 提供两种访问级别。填写邮箱可解锁<strong>礼貌池</strong>，速率限制提升约 10 倍，大型 <code class="bg-slate-200 px-1 rounded">.bib</code> 文件的验证速度将显著加快。',
-    withoutEmail: '不填邮箱',
-    withEmail: '填写邮箱 ✓',
-    rateWithout: '约 10 次/秒',
-    sizeWithout: '适用于 30 条以内',
-    rateWith: '约 100 次/秒',
-    sizeWith: '推荐大文件使用',
-    emailPrivacy: '您的邮箱仅作为 User-Agent 请求头的一部分发送给 OpenAlex，本工具不会存储或共享您的邮箱。请参阅 <a href="https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication" target="_blank" class="underline hover:text-slate-600">OpenAlex 礼貌池文档</a>。',
+    apiKeyLabel: 'OpenAlex API key（建议填写）',
+    apiKeyDesc: '可从 OpenAlex 账户免费获取；匿名搜索可能被限流。',
+    apiKeyPrivacy: '密钥仅发送至 OpenAlex，本页面不会保存。',
     // Buttons & progress
     verifyBtn: '验证引用',
     verifyAgain: '重新验证',
@@ -428,6 +419,7 @@ const TRANSLATIONS = {
     labelWarning: '⚠️ 警告',
     labelError: '❌ 错误',
     labelNotFound: '🔍 未找到',
+    labelUnverified: '⏳ 未完成核验',
     // Result card field labels
     labelAuthors: '作者 (API):',
     labelYear: '年份 (API):',
@@ -436,15 +428,18 @@ const TRANSLATIONS = {
     noTitle: '（无标题）',
     // File handling
     alertBibOnly: '请选择 .bib 文件。',
+    alertPasteEmpty: '请先粘贴 BibTeX 内容。',
     entriesBadge: (name, count) => `${name}  ·  ${count} 条引用`,
     // Issue messages
-    issueNotFound: '论文未在 OpenAlex / CrossRef 中找到（可能是 AI 幻觉引用或严重拼写错误）',
+    issueNotFound: '已完成的数据库检索中未找到匹配记录，建议人工核查',
+    issueUnverified: (reason) => `未完成核验：${reason}`,
     issueTitleMismatch: (ts, bibTitle, apiTitle) => `标题不匹配 (相似度 ${ts}%)\n  bib : ${bibTitle}\n  实际: ${apiTitle}`,
     issueYearOff: (diff, bibYear, apiYear) => `年份偏差 ${diff} 年: bib=${bibYear}, 实际=${apiYear}`,
     issueYearPreprint: (bibYear, apiYear) => `年份偏差 1 年（可能为预印本 vs 正式发表）: bib=${bibYear}, 实际=${apiYear}`,
     issueYearMissing: (apiYear) => `bib 中缺少年份字段，API 显示为 ${apiYear}`,
     issueAuthorMismatch: (bibFirst, apiFirstLast, as) => `第一作者姓氏不匹配: bib="${bibFirst}", 实际="${apiFirstLast}" (相似度 ${as}%)`,
     issueAuthorCount: (bibCount, apiCount) => `作者数量少于实际: bib=${bibCount} 人, 实际=${apiCount} 人`,
+    issueAuthorOrder: 'bib 第一作者见于数据库作者列表，但不是首位（可能是团队署名或版本差异）',
     // Markdown report
     reportTitle: '# BibTeX 引用验证报告',
     reportFile: (name, count) => `> 验证文件: \`${name}.bib\`  共 ${count} 条引用`,
@@ -455,9 +450,11 @@ const TRANSLATIONS = {
     reportRowWarning: '⚠️ 警告 (WARNING)',
     reportRowError: '❌ 错误 (ERROR)',
     reportRowNotFound: '🔍 未找到 (NOT_FOUND)',
+    reportRowUnverified: '⏳ 未完成核验 (UNVERIFIED)',
     reportSectionErrors: (n) => `## ❌ 错误 (ERROR) (${n} 条)`,
     reportSectionWarnings: (n) => `## ⚠️ 警告 (WARNING) (${n} 条)`,
     reportSectionNotFound: (n) => `## 🔍 未找到 (NOT_FOUND) (${n} 条)`,
+    reportSectionUnverified: (n) => `## ⏳ 未完成核验 (UNVERIFIED) (${n} 条)`,
     reportSectionOK: (n) => `## ✅ 正常 (OK) (${n} 条)`,
     reportMatchScore: (score) => `匹配度 ${score}%`,
     reportLabelTitle: '**标题 (bib)**:',
@@ -484,6 +481,9 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n-html]').forEach(el => {
     el.innerHTML = t(el.dataset.i18nHtml);
   });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
   const toggleBtn = document.getElementById('lang-toggle');
   if (toggleBtn) toggleBtn.textContent = currentLang === 'en' ? '中文' : 'English';
 }
@@ -507,23 +507,57 @@ let currentBibName = 'references';
 // ─── BibTeX Parser ────────────────────────────────────────────────────────────
 function parseBib(text) {
   const entries = [];
-  const entryRe = /@(\w+)\s*\{\s*([^,\s]+)\s*,([^@]*)/gi;
-  let m;
-  while ((m = entryRe.exec(text)) !== null) {
-    const type   = m[1].toLowerCase();
-    const key    = m[2].trim();
-    const body   = m[3];
-    if (type === 'string' || type === 'preamble' || type === 'comment') continue;
-
-    const entry = { ENTRYTYPE: type, ID: key };
-    const fieldRe = /(\w+)\s*=\s*(?:\{((?:[^{}]|\{[^{}]*\})*)\}|"([^"]*)"|(\d+))/gi;
-    let f;
-    while ((f = fieldRe.exec(body)) !== null) {
-      const name  = f[1].toLowerCase();
-      const value = (f[2] !== undefined ? f[2] : f[3] !== undefined ? f[3] : f[4] || '').trim();
-      entry[name] = value;
+  let pos = 0;
+  while ((pos = text.indexOf('@', pos)) !== -1) {
+    const head = /^@(\w+)\s*([({])/.exec(text.slice(pos));
+    if (!head) { pos++; continue; }
+    let i = pos + head[0].length;
+    const endChar = head[2] === '{' ? '}' : ')';
+    if (['string', 'preamble', 'comment'].includes(head[1].toLowerCase())) {
+      let depth = 1, quoted = false;
+      while (i < text.length && depth) {
+        const char = text[i++];
+        if (char === '"' && text[i - 2] !== '\\') quoted = !quoted;
+        if (!quoted) {
+          if (char === head[2]) depth++;
+          if (char === endChar) depth--;
+        }
+      }
+      pos = i;
+      continue;
     }
-    entries.push(entry);
+    const comma = text.indexOf(',', i);
+    if (comma < 0) break;
+    const key = text.slice(i, comma).trim();
+    i = comma + 1;
+    const entry = { ENTRYTYPE: head[1].toLowerCase(), ID: key };
+    while (i < text.length) {
+      while (/[\s,]/.test(text[i] || '') && i < text.length) i++;
+      if (text[i] === endChar) { i++; break; }
+      const field = /^(\w+)\s*=\s*/.exec(text.slice(i));
+      if (!field) { i++; continue; }
+      i += field[0].length;
+      let value = '';
+      if (text[i] === '{' || text[i] === '"') {
+        const open = text[i++];
+        let depth = 1;
+        const begin = i;
+        while (i < text.length && depth > 0) {
+          if (text[i] === '\\' && open === '"') { i += 2; continue; }
+          if (open === '{' && text[i] === '{') depth++;
+          if (text[i] === (open === '{' ? '}' : '"')) depth--;
+          i++;
+        }
+        value = text.slice(begin, depth === 0 ? i - 1 : i);
+      } else {
+        const begin = i;
+        while (i < text.length && text[i] !== ',' && text[i] !== endChar) i++;
+        value = text.slice(begin, i);
+      }
+      entry[field[1].toLowerCase()] = value.trim();
+    }
+    if (!['string', 'preamble', 'comment'].includes(entry.ENTRYTYPE)) entries.push(entry);
+    pos = i;
   }
   return entries;
 }
@@ -547,7 +581,9 @@ function normalizeLastname(name) {
 function firstAuthorLastname(authorField) {
   if (!authorField) return '';
   let first = authorField.split(/\s+and\s+/i)[0].trim();
-  first = first.replace(/\{([^{}]*)\}/g, '$1').replace(/\\[a-zA-Z]+\s*/g, '');
+  first = first.replace(/\\['"`^~=.uvHckbrtd]\s*\{?([a-zA-Z])\}?/g, '$1');
+  while (/\{([^{}]*)\}/.test(first)) first = first.replace(/\{([^{}]*)\}/g, '$1');
+  first = first.replace(/\\[a-zA-Z]+\s*/g, '');
   if (first.includes(',')) return normalizeLastname(first.split(',')[0].trim());
   const parts = first.trim().split(/\s+/);
   return normalizeLastname(parts[parts.length - 1] || '');
@@ -581,40 +617,71 @@ function levenshtein(s, t) {
 const OA_URL = 'https://api.openalex.org/works';
 const CR_URL = 'https://api.crossref.org/works/';
 
-async function oaSearch(title, email) {
+async function getJson(url) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const r = await fetch(url, { signal: controller.signal });
+      if (r.status === 404) return null;
+      if (!r.ok) {
+        const error = new Error(`HTTP ${r.status}`);
+        error.status = r.status;
+        throw error;
+      }
+      return await r.json();
+    } catch (e) {
+      if (attempt === 2 || !(e.name === 'AbortError' || e instanceof TypeError || e.status === 429 || e.status >= 500)) throw e;
+    } finally { clearTimeout(timeout); }
+    await new Promise(resolve => setTimeout(resolve, 1000 * 2 ** attempt));
+  }
+}
+
+async function oaSearch(title, apiKey) {
   const titleThreshold = parseInt(document.getElementById('title-threshold').value);
   const params = new URLSearchParams({
-    search: title,
+    search: normTitle(title),
     'per-page': '5',
     select: 'title,authorships,publication_year,primary_location,doi'
   });
-  if (email) params.set('mailto', email);
-  try {
-    const r = await fetch(`${OA_URL}?${params}`);
-    if (!r.ok) return null;
-    const data = await r.json();
-    if (!data.results || data.results.length === 0) return null;
-
-    const normQ = normTitle(title);
-    let best = null, bestScore = 0;
-    for (const paper of data.results) {
-      if (!paper.title) continue;
-      const score = tokenSortRatio(normQ, normTitle(paper.title));
-      if (score > bestScore) { bestScore = score; best = paper; }
-    }
-    if (bestScore < titleThreshold) return null;
-    best._matchScore = bestScore;
-    return best;
-  } catch { return null; }
+  if (apiKey) params.set('api_key', apiKey);
+  const data = await getJson(`${OA_URL}?${params}`);
+  if (!data || !Array.isArray(data.results)) throw new Error('OpenAlex returned no usable search response');
+  if (!data.results.length) return null;
+  const normQ = normTitle(title);
+  let best = null, bestScore = 0;
+  for (const paper of data.results) {
+    if (!paper.title) continue;
+    const score = tokenSortRatio(normQ, normTitle(paper.title));
+    if (score > bestScore) { bestScore = score; best = paper; }
+  }
+  if (bestScore < titleThreshold) return null;
+  best._matchScore = bestScore;
+  return best;
 }
 
 async function crossrefByDoi(doi) {
-  try {
-    const r = await fetch(`${CR_URL}${encodeURIComponent(doi.trim())}`);
-    if (!r.ok) return null;
-    const data = await r.json();
-    return data.status === 'ok' ? data.message : null;
-  } catch { return null; }
+  const data = await getJson(`${CR_URL}${encodeURIComponent(doi.trim())}`);
+  if (!data) return null;
+  if (data.status !== 'ok' || !data.message) throw new Error('CrossRef returned malformed metadata');
+  return data.message;
+}
+
+async function dataciteByDoi(doi) {
+  const data = await getJson(`https://api.datacite.org/dois/${doi.trim().split('/').map(encodeURIComponent).join('/')}`);
+  if (!data) return null;
+  if (!data.data?.attributes) throw new Error('DataCite returned malformed metadata');
+  return data.data.attributes;
+}
+
+function dataciteExtract(attrs) {
+  return {
+    title: attrs.titles?.[0]?.title || '',
+    year: attrs.publicationYear || null,
+    authors: (attrs.creators || []).map(a => a.name).filter(Boolean),
+    venue: typeof attrs.publisher === 'string' ? attrs.publisher : attrs.publisher?.name || '',
+    doi: attrs.doi || ''
+  };
 }
 
 function oaExtract(paper) {
@@ -681,11 +748,13 @@ function compareEntry(bib, apiData, source, matchScore) {
   // Author
   if (apiData.authors && apiData.authors.length > 0 && bib.author) {
     const bibFirst      = firstAuthorLastname(bib.author);
-    const apiFirstParts = apiData.authors[0].split(/\s+/);
-    const apiFirstLast  = normalizeLastname(apiFirstParts[apiFirstParts.length - 1] || '');
+    const apiFirstLast  = firstAuthorLastname(apiData.authors[0]);
     const as = simpleRatio(bibFirst, apiFirstLast);
     if (as < authorThreshold) {
-      issues.push({ key: 'issueAuthorMismatch', args: [bibFirst, apiFirstLast, as], isCritical: true });
+      const elsewhere = apiData.authors.slice(1).some(name => firstAuthorLastname(name) === bibFirst);
+      issues.push(elsewhere
+        ? { key: 'issueAuthorOrder', args: [], isCritical: false }
+        : { key: 'issueAuthorMismatch', args: [bibFirst, apiFirstLast, as], isCritical: true });
     }
     const bibCount = bib.author.split(/\s+and\s+/i).length;
     if (apiData.authors.length > bibCount + 1 && !bib.author.toLowerCase().includes('others')) {
@@ -704,7 +773,12 @@ const STATUS_CLASSES = {
   WARNING:   { badge: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-200', icon: '⚠️' },
   ERROR:     { badge: 'bg-red-100 text-red-700',       border: 'border-red-200',    icon: '❌' },
   NOT_FOUND: { badge: 'bg-slate-100 text-slate-500',   border: 'border-slate-200',  icon: '🔍' },
+  UNVERIFIED: { badge: 'bg-amber-100 text-amber-700', border: 'border-amber-200', icon: '⏳' },
 };
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
 
 function renderCard(result) {
   const sc    = STATUS_CLASSES[result.status] || STATUS_CLASSES.NOT_FOUND;
@@ -714,22 +788,22 @@ function renderCard(result) {
   const authorsHtml = ad && ad.authors && ad.authors.length
     ? `<div class="text-xs text-slate-500 mt-0.5">
          <span class="font-medium text-slate-600">${t('labelAuthors')}</span>
-         ${ad.authors.slice(0,4).join(', ')}${ad.authors.length > 4 ? ' …' : ''}
+         ${escapeHtml(ad.authors.slice(0,4).join(', '))}${ad.authors.length > 4 ? ' …' : ''}
        </div>` : '';
 
   const venueHtml = ad && ad.venue
     ? `<div class="text-xs text-slate-500 mt-0.5">
-         <span class="font-medium text-slate-600">${t('labelVenue')}</span> ${ad.venue}
+         <span class="font-medium text-slate-600">${t('labelVenue')}</span> ${escapeHtml(ad.venue)}
        </div>` : '';
 
   const apiTitleHtml = ad && ad.title && ad.title !== result.bibTitle
     ? `<div class="text-xs text-slate-500 mt-0.5">
-         <span class="font-medium text-slate-600">${t('labelApiTitle')}</span> ${ad.title}
+         <span class="font-medium text-slate-600">${t('labelApiTitle')}</span> ${escapeHtml(ad.title)}
        </div>` : '';
 
   const yearHtml = ad && ad.year
     ? `<div class="text-xs text-slate-500 mt-0.5">
-         <span class="font-medium text-slate-600">${t('labelYear')}</span> ${ad.year}
+         <span class="font-medium text-slate-600">${t('labelYear')}</span> ${escapeHtml(ad.year)}
        </div>` : '';
 
   const issuesHtml = result.issues && result.issues.length
@@ -737,7 +811,7 @@ function renderCard(result) {
          ${result.issues.map(issue => `
            <div class="flex gap-2 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
              <span class="mt-0.5 shrink-0">⚠</span>
-             <pre class="whitespace-pre-wrap font-sans">${t(issue.key, ...issue.args)}</pre>
+             <pre class="whitespace-pre-wrap font-sans">${escapeHtml(t(issue.key, ...issue.args))}</pre>
            </div>`).join('')}
        </div>` : '';
 
@@ -751,11 +825,11 @@ function renderCard(result) {
     <div class="flex items-start justify-between gap-3">
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="mono text-sm font-semibold text-slate-800">${result.key}</span>
+          <span class="mono text-sm font-semibold text-slate-800">${escapeHtml(result.key)}</span>
           <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${sc.badge}">${sc.icon} ${result.status}</span>
           ${sourceTag}
         </div>
-        <p class="text-xs text-slate-500 mt-1 line-clamp-2">${result.bibTitle || t('noTitle')}</p>
+        <p class="text-xs text-slate-500 mt-1 line-clamp-2">${escapeHtml(result.bibTitle || t('noTitle'))}</p>
       </div>
     </div>
     ${apiTitleHtml}${yearHtml}${authorsHtml}${venueHtml}${issuesHtml}
@@ -764,12 +838,13 @@ function renderCard(result) {
 }
 
 function updateSummary(results) {
-  const counts = { OK: 0, WARNING: 0, ERROR: 0, NOT_FOUND: 0 };
+  const counts = { OK: 0, WARNING: 0, ERROR: 0, NOT_FOUND: 0, UNVERIFIED: 0 };
   results.forEach(r => counts[r.status] = (counts[r.status] || 0) + 1);
   document.getElementById('cnt-ok').textContent   = counts.OK;
   document.getElementById('cnt-warn').textContent  = counts.WARNING;
   document.getElementById('cnt-err').textContent   = counts.ERROR;
   document.getElementById('cnt-nf').textContent    = counts.NOT_FOUND;
+  document.getElementById('cnt-unverified').textContent = counts.UNVERIFIED;
   document.getElementById('summary-section').classList.remove('hidden');
 }
 
@@ -779,6 +854,7 @@ function buildMarkdown(results) {
   const w   = results.filter(r => r.status === 'WARNING');
   const e   = results.filter(r => r.status === 'ERROR');
   const nf  = results.filter(r => r.status === 'NOT_FOUND');
+  const u   = results.filter(r => r.status === 'UNVERIFIED');
 
   const lines = [
     t('reportTitle'), '',
@@ -790,6 +866,7 @@ function buildMarkdown(results) {
     `| ${t('reportRowWarning')} | ${w.length} |`,
     `| ${t('reportRowError')} | ${e.length} |`,
     `| ${t('reportRowNotFound')} | ${nf.length} |`,
+    `| ${t('reportRowUnverified')} | ${u.length} |`,
     '',
   ];
 
@@ -821,6 +898,7 @@ function buildMarkdown(results) {
   section('reportSectionErrors',   e);
   section('reportSectionWarnings', w);
   section('reportSectionNotFound', nf);
+  section('reportSectionUnverified', u);
   section('reportSectionOK',       ok);
   return lines.join('\n');
 }
@@ -837,7 +915,7 @@ function downloadReport() {
 
 // ─── Main verification loop ───────────────────────────────────────────────────
 async function verifyAll(entries) {
-  const email     = document.getElementById('polite-email').value.trim();
+  const apiKey    = document.getElementById('openalex-key').value.trim();
   const total     = entries.length;
   const progBar   = document.getElementById('progress-bar');
   const progLabel = document.getElementById('progress-label');
@@ -859,27 +937,40 @@ async function verifyAll(entries) {
 
     let apiData = null, source = null, matchScore = 0;
 
-    // 1. CrossRef by DOI
+    const apiErrors = [];
+    // Exact DOI lookups first; a failed provider doesn't invalidate a later match.
     if (bib.doi) {
-      const msg = await crossrefByDoi(bib.doi);
-      if (msg) {
-        apiData     = crExtract(msg);
-        source      = 'crossref';
-        matchScore  = tokenSortRatio(normTitle(bib.title || ''), normTitle(apiData.title));
+      for (const [name, lookup, extract] of [
+        ['CrossRef', crossrefByDoi, crExtract], ['DataCite', dataciteByDoi, dataciteExtract]
+      ]) {
+        try {
+          const record = await lookup(bib.doi);
+          if (record) {
+            apiData = extract(record);
+            source = name.toLowerCase();
+            matchScore = tokenSortRatio(normTitle(bib.title || ''), normTitle(apiData.title));
+            break;
+          }
+        } catch (e) { apiErrors.push(`${name}: ${e.message}`); }
       }
     }
-
-    // 2. OpenAlex title search
-    if (!source) {
-      const paper = await oaSearch(bib.title || '', email);
-      if (paper) {
-        source     = 'openalex';
-        matchScore = paper._matchScore;
-        apiData    = oaExtract(paper);
-      }
+    if (!source && bib.title) {
+      try {
+        const paper = await oaSearch(bib.title, apiKey);
+        if (paper) {
+          source = 'openalex';
+          matchScore = paper._matchScore;
+          apiData = oaExtract(paper);
+        }
+      } catch (e) { apiErrors.push(`OpenAlex: ${e.message}`); }
     }
+    if (!source && !bib.title && !bib.doi) apiErrors.push('Missing both title and DOI');
 
     const result = compareEntry(bib, apiData, source, matchScore);
+    if (!apiData && apiErrors.length) {
+      result.status = 'UNVERIFIED';
+      result.issues = [{ key: 'issueUnverified', args: [apiErrors.join('; ')], isCritical: false }];
+    }
     result.key      = key;
     result.bibTitle = bib.title || '';
     allResults.push(result);
@@ -909,30 +1000,32 @@ async function startVerification() {
 }
 
 // ─── File Handling ────────────────────────────────────────────────────────────
+function handleBibText(text, filename) {
+  currentBibName = filename.replace(/\.bib$/i, '');
+  parsedEntries = parseBib(text);
+  document.getElementById('file-name-text').textContent = t('entriesBadge', filename, parsedEntries.length);
+  document.getElementById('file-name-badge').classList.remove('hidden');
+  document.getElementById('verify-btn').disabled = parsedEntries.length === 0;
+  const btnText = document.getElementById('verify-btn-text');
+  btnText.textContent = t('verifyBtn');
+  btnText.dataset.i18n = 'verifyBtn';
+  document.getElementById('results-section').replaceChildren();
+  document.getElementById('summary-section').classList.add('hidden');
+  document.getElementById('progress-section').classList.add('hidden');
+}
+
 function handleFile(file) {
-  if (!file || !file.name.endsWith('.bib')) {
-    alert(t('alertBibOnly'));
-    return;
-  }
-  currentBibName = file.name.replace(/\.bib$/i, '');
-  const reader   = new FileReader();
-  reader.onload  = e => {
-    parsedEntries = parseBib(e.target.result);
-    const badge   = document.getElementById('file-name-badge');
-    const nameEl  = document.getElementById('file-name-text');
-    nameEl.textContent = t('entriesBadge', file.name, parsedEntries.length);
-    badge.classList.remove('hidden');
-    document.getElementById('verify-btn').disabled = parsedEntries.length === 0;
-    // Reset the verify button text in case it was changed to "Verify Again"
-    const btnText = document.getElementById('verify-btn-text');
-    btnText.textContent  = t('verifyBtn');
-    btnText.dataset.i18n = 'verifyBtn';
-    document.getElementById('results-section').innerHTML = '';
-    document.getElementById('summary-section').classList.add('hidden');
-    document.getElementById('progress-section').classList.add('hidden');
-  };
+  if (!file || !/\.bib$/i.test(file.name)) { alert(t('alertBibOnly')); return; }
+  const reader = new FileReader();
+  reader.onload = e => handleBibText(e.target.result, file.name);
   reader.readAsText(file, 'utf-8');
 }
+
+document.getElementById('paste-btn').addEventListener('click', () => {
+  const text = document.getElementById('bib-paste').value.trim();
+  if (!text) { alert(t('alertPasteEmpty')); return; }
+  handleBibText(text, 'pasted.bib');
+});
 
 // File input
 document.getElementById('file-input').addEventListener('change', e => {

@@ -7,9 +7,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Online Tool](https://img.shields.io/badge/Online%20Tool-GitHub%20Pages-blueviolet)](https://altman-conquer.github.io/bibtex-verifier/)
 
-**BibTeX Verifier** is an open-source CLI tool that automatically validates every reference in a `.bib` file against two authoritative academic databases — **OpenAlex** and **CrossRef** — to catch typos, wrong years, misattributed authors, and AI-hallucinated citations before they reach your paper.
+**BibTeX Verifier** is an open-source CLI tool that automatically validates every reference in a `.bib` file against **OpenAlex**, **CrossRef**, and **DataCite** to flag metadata inconsistencies and references needing manual review before submission.
 
-> **BibTeX 引用验证工具** 是一个开源命令行工具，通过调用 OpenAlex 和 CrossRef 两个权威学术数据库，自动核验 `.bib` 文件中每条引用的标题、作者、年份等元数据，帮助研究者在论文提交前发现引用错误和 AI 幻觉引用。
+> **BibTeX 引用验证工具** 是一个开源命令行工具，通过 OpenAlex、CrossRef 和 DataCite 核验 `.bib` 文件中的标题、作者、年份等书目信息，帮助研究者在投稿前定位需要人工核查的引用。
 
 ---
 
@@ -17,14 +17,14 @@
 
 | Feature | Description |
 |---|---|
-| **AI hallucination detection** | Flags papers that simply do not exist in any academic database |
-| **Dual-source verification** | CrossRef (exact DOI lookup) + OpenAlex (fuzzy title search) |
+| **Reference review** | Flags unresolved metadata for manual verification; missing database records do not prove fabrication |
+| **Multi-source verification** | CrossRef and DataCite (DOI lookup) + OpenAlex (title search) |
 | **Field-level checking** | Title, year, first-author last name, author count |
 | **Markdown report** | Human-readable report with per-entry details and a summary table |
 | **JSON output** | Machine-readable raw results for further processing |
 | **CLI & Python API** | Use as a command or import as a library |
-| **No registration needed** | OpenAlex is free and open; CrossRef is public |
-| **Rate-limit safe** | Built-in throttling and exponential back-off on HTTP errors |
+| **Free OpenAlex key** | Recommended for reliable batch searches; set `OPENALEX_API_KEY` |
+| **Explicit API failures** | Rate limits/timeouts are `UNVERIFIED`, never `NOT_FOUND` |
 
 ---
 
@@ -34,18 +34,28 @@ No installation needed — use the web interface directly:
 
 **[https://altman-conquer.github.io/bibtex-verifier/](https://altman-conquer.github.io/bibtex-verifier/)**
 
-Upload your `.bib` file and get a verification report instantly in your browser. No data is sent to any server — all API calls are made directly from your browser to OpenAlex and CrossRef.
+Upload your `.bib` file or paste BibTeX from Overleaf and get a verification report in your browser. The `.bib` file stays in your browser; its metadata is sent directly to OpenAlex, CrossRef, and DataCite for lookup.
 
 ---
 
 ## Quick Start / 快速开始
 
 ```bash
-pip install bibtex-verifier
+git clone https://github.com/Altman-conquer/bibtex-verifier.git
+cd bibtex-verifier
+python -m pip install -e .
 bibverify my_paper.bib
 ```
 
 This generates `my_paper.report.md` with a full verification report.
+
+---
+
+## AI Agent Skill / AI 助手核验
+
+This repository includes a [Codex skill](.agents/skills/verify-bibtex/SKILL.md) and a [Claude Code skill](.claude/skills/verify-bibtex/SKILL.md). Other agents that support `SKILL.md` can follow the same instructions. Give your agent this repository URL and your `.bib` file, then ask it to use the `verify-bibtex` skill to set up the local CLI, run verification, and explain the report. After opening the cloned repository, Codex can invoke `$verify-bibtex` and Claude Code can invoke `/verify-bibtex`.
+
+OpenAlex keys are **not bundled**. The agent uses your existing `OPENALEX_API_KEY` environment variable or asks you to configure your own key; it must never save the key in the repository or report. Without a key, OpenAlex may rate-limit the run. A repository link alone also cannot supply the bibliography to check.
 
 ---
 
@@ -57,15 +67,36 @@ This generates `my_paper.report.md` with a full verification report.
 pip install bibtex-verifier
 ```
 
+The PyPI release may lag behind the GitHub source. Use the source installation for the latest OpenAlex key support and agent skills.
+
 **From source:**
 
 ```bash
-git clone https://github.com/your-username/bibtex-verifier.git
+git clone https://github.com/Altman-conquer/bibtex-verifier.git
 cd bibtex-verifier
 pip install -e .
 ```
 
-**Requirements:** Python 3.9+, no API keys required.
+**Requirements:** Python 3.9+. A free OpenAlex API key is recommended for reliable batch search.
+
+---
+
+## OpenAlex API Key / 获取与使用
+
+1. Sign in or create a free account at [OpenAlex API settings](https://openalex.org/settings/api), then copy your API key.
+2. For the CLI, set the key in the current shell without putting it in command history. In Bash (Linux/macOS):
+
+   ```bash
+   read -rsp 'OpenAlex API key: ' OPENALEX_API_KEY
+   echo
+   export OPENALEX_API_KEY
+   bibverify paper.bib --json
+   unset OPENALEX_API_KEY
+   ```
+
+3. For the [online tool](https://altman-conquer.github.io/bibtex-verifier/), enter the key in its **OpenAlex API key** field before verification. The page sends it to OpenAlex and does not save it.
+
+Use your own key. Do not commit it to Git, put it in a shared `.env` file, or include it in a report. Without a key, OpenAlex may return HTTP 429 and leave some entries `UNVERIFIED`. See the [official authentication guide](https://developers.openalex.org/guides/authentication) for current limits.
 
 ---
 
@@ -83,7 +114,10 @@ bibverify paper.bib --output reports/verification.md
 # Also export raw JSON results
 bibverify paper.bib --json
 
-# Use your email for higher API rate limits (Polite Pool)
+# Use the OpenAlex key configured above for reliable batch search
+bibverify paper.bib
+
+# Optional contact email for API requests
 bibverify paper.bib --email you@university.edu
 
 # Adjust fuzzy-match thresholds
@@ -99,53 +133,36 @@ bibverify paper.bib --title-threshold 85 --author-threshold 70
 | `--json` | `false` | Also write a `.json` results file |
 | `--title-threshold` | `82` | Minimum fuzzy score for title match (0–100) |
 | `--author-threshold` | `72` | Minimum fuzzy score for author match (0–100) |
-| `--email` | — | Email for Polite Pool (faster rate limits) |
+| `--email` | — | Optional contact email for API requests |
+| `OPENALEX_API_KEY` | — | Environment variable for a free OpenAlex key |
 | `--rate-limit` | `0.15` | Seconds between API calls |
 | `--version / -V` | — | Show version and exit |
 
 ### Python API
 
+For programmatic lookups, API failures raise `ApiRequestError`; a missing database match returns `None`:
+
 ```python
-from pathlib import Path
-from bibtex_verifier.loader import load_bib
-from bibtex_verifier.apis import oa_search, oa_extract, crossref_by_doi, crossref_extract
-from bibtex_verifier.comparator import compare_entry
-from bibtex_verifier.report import build_markdown_report
+from bibtex_verifier.apis import ApiRequestError, datacite_by_doi, datacite_extract
 
-entries = load_bib(Path("paper.bib"))
-
-results = []
-for entry in entries:
-    # Try CrossRef first if DOI is available
-    api_data, source, score = None, None, 0
-    if entry.get("doi"):
-        msg = crossref_by_doi(entry["doi"])
-        if msg:
-            api_data = crossref_extract(msg)
-            source = "crossref"
-            score = 100  # DOI is exact
-    # Fall back to OpenAlex
-    if not source:
-        paper = oa_search(entry.get("title", ""))
-        if paper:
-            api_data = oa_extract(paper)
-            source = "openalex"
-            score = paper["_match_score"]
-
-    result = compare_entry(entry, api_data=api_data, source=source, match_score=score)
-    results.append(result)
-
-print(build_markdown_report(results, bib_filename="paper.bib"))
+try:
+    record = datacite_by_doi("10.48550/arxiv.2505.09388")
+    if record:
+        print(datacite_extract(record)["title"])
+except ApiRequestError as exc:
+    print("UNVERIFIED:", exc)
 ```
+
+Use `bibverify paper.bib --json` for the complete multi-source verification chain and machine-readable results.
 
 ---
 
 ## Sample Output / 输出示例
 
 ```
-BibTeX Verifier v0.1.0
+BibTeX Verifier v0.1.1
 Parsing paper.bib ...
-Found 8 entries — estimated time: ~5s
+Found 8 entries
 
   [  1/8] Vaswani2017attention                    [DOI] OK      score= 98%
   [  2/8] He2016resnet                                  OK      score= 95%
@@ -165,6 +182,7 @@ Done! Report saved to paper.report.md
 │ ⚠️  WARNING    │ 2      │
 │ ❌ ERROR       │ 2      │
 │ 🔍 NOT_FOUND   │ 1      │
+│ ⏳ UNVERIFIED  │ 0      │
 └────────────────┴────────┘
 ```
 
@@ -183,6 +201,7 @@ The generated Markdown report looks like:
 | ⚠️ 警告 (WARNING) | 2 |
 | ❌ 错误 (ERROR) | 2 |
 | 🔍 未找到 (NOT_FOUND) | 1 |
+| ⏳ 未完成核验 (UNVERIFIED) | 0 |
 
 ## ❌ 错误 (ERROR) (2 条)
 
@@ -212,7 +231,9 @@ The generated Markdown report looks like:
 │  1. DOI present?                        │
 │     └─► CrossRef exact lookup           │
 │                                         │
-│  2. No DOI / CrossRef miss?             │
+│  2. CrossRef miss?                      │
+│     └─► DataCite exact DOI lookup       │
+│  3. No DOI match?                       │
 │     └─► OpenAlex fuzzy title search     │
 │         (rapidfuzz token_sort_ratio)    │
 └────────────────────┬────────────────────┘
@@ -236,7 +257,8 @@ The generated Markdown report looks like:
 | **OK** | All checked fields match within thresholds |
 | **WARNING** | Minor discrepancy (year ±1, too few authors) — review recommended |
 | **ERROR** | Significant mismatch (title or author wrong) — likely an error |
-| **NOT_FOUND** | No matching paper found — possible AI hallucination or misspelling |
+| **NOT_FOUND** | All queried sources answered, but no matching metadata was found; check manually |
+| **UNVERIFIED** | One or more API calls failed or were rate-limited, so no reliable conclusion is possible |
 
 ---
 
@@ -245,11 +267,13 @@ The generated Markdown report looks like:
 ### OpenAlex
 
 - **URL**: [openalex.org](https://openalex.org)
-- **Free and open**, no registration or API key required
-- Rate limit: ~10 req/s (tool defaults to ~7 req/s for safety)
-- Coverage: 250M+ works
-- Tip: Providing `--email` enables the [Polite Pool](https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication) with higher rate limits
+- A free API key is recommended for batch searches: set `OPENALEX_API_KEY` for CLI or enter it in the web settings. Anonymous access is limited and may return HTTP 429.
+- Search has a daily free budget; see the [official authentication guide](https://developers.openalex.org/guides/authentication).
 
+### DataCite
+
+- **URL**: [datacite.org](https://datacite.org)
+- Used for DOI lookup when CrossRef has no match, including registered arXiv DOIs.
 
 ### CrossRef
 
@@ -322,7 +346,7 @@ Contributions are welcome! Please:
 ## Known Limitations / 已知限制
 
 - **Conference proceedings** may have lower match scores due to inconsistent venue naming across databases.
-- **Chinese/Japanese author names** may trigger false positives in the author comparison; consider raising `--author-threshold` in such cases.
+- **Chinese/Japanese author names** may trigger false positives; lower `--author-threshold` if the database uses a different romanization.
 - OpenAlex coverage of very old papers (pre-1990) may be incomplete.
 - The tool checks metadata only — it does not verify that the cited content actually supports your claim.
 
