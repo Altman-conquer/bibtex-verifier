@@ -80,5 +80,5 @@ def test_doi_lookup_failure_is_preserved_after_title_match(tmp_path):
 
 
 def test_doi_comparison_accepts_case_and_resolver_variations():
-    result = compare_entry({"ID": "paper", "doi": "DOI: 10.1000/ABC", "title": "Paper"}, api_data={"title": "Paper", "doi": "https://doi.org/10.1000/abc"}, source="crossref", match_score=100)
+    result = compare_entry({"ID": "paper", "doi": "DOI: 10.1000/ABC", "title": "Paper", "author": "Ann Alice", "year": "2025"}, api_data={"title": "Paper", "doi": "https://doi.org/10.1000/abc", "authors": ["Ann Alice"], "year": 2025}, source="crossref", match_score=100)
     assert result["status"] == "OK"
