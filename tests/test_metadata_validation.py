@@ -45,3 +45,10 @@ def test_explicit_title_conflict_is_retained_when_other_source_fields_are_missin
     )
     assert result["status"] == "ERROR"
     assert any(issue.startswith("来源元数据缺少") for issue in result["issues"])
+
+
+@pytest.mark.parametrize("value", ["0000", "-2025", "99999"])
+def test_invalid_numeric_input_year_cannot_be_ok(value):
+    result = compare_entry({**ENTRY, "year": value}, api_data={**DATA, "year": value}, source="crossref", match_score=100)
+    assert result["status"] == "UNVERIFIED"
+    assert any(issue.startswith("年份格式无效") for issue in result["issues"])

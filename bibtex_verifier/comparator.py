@@ -12,6 +12,10 @@ DEFAULT_TITLE_THRESHOLD = 82
 DEFAULT_AUTHOR_THRESHOLD = 72
 
 
+def valid_year(value) -> bool:
+    return bool(re.fullmatch(r"\d{4}", str(value).strip())) and int(value) > 0
+
+
 def compare_entry(
     entry: dict,
     *,
@@ -63,9 +67,7 @@ def compare_entry(
     if paper and not api_data.get("year"):
         missing_source.append("年份")
     elif api_data.get("year"):
-        try:
-            int(api_data["year"])
-        except (ValueError, TypeError):
+        if not valid_year(api_data["year"]):
             missing_source.append("有效年份")
     issues.extend(f"来源元数据缺少{field}，无法完成核验" for field in missing_source)
     if not bib_title:
@@ -73,9 +75,7 @@ def compare_entry(
     if paper and not bib_authors:
         issues.append("bib 中缺少作者字段")
     if bib_year:
-        try:
-            int(bib_year)
-        except (ValueError, TypeError):
+        if not valid_year(bib_year):
             issues.append(f"年份格式无效：{bib_year}")
 
     # ── Title ─────────────────────────────────────────────────────────────────
