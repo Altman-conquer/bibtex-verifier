@@ -5,7 +5,7 @@ from typing import Optional
 
 from rapidfuzz import fuzz
 
-from bibtex_verifier.apis import extract_first_author_lastname, normalize_title
+from bibtex_verifier.apis import extract_first_author_lastname, normalize_doi, normalize_title
 
 # Default thresholds (can be overridden per call)
 DEFAULT_TITLE_THRESHOLD = 82
@@ -21,6 +21,7 @@ def compare_entry(
     title_threshold: int = DEFAULT_TITLE_THRESHOLD,
     author_threshold: int = DEFAULT_AUTHOR_THRESHOLD,
     api_errors: Optional[list[str]] = None,
+    doi_lookup_issue: Optional[str] = None,
 ) -> dict:
     """Compare a single BibTeX entry against API-retrieved data.
 
@@ -32,6 +33,8 @@ def compare_entry(
         match_score: Fuzzy title match score used when locating the paper.
         title_threshold: Minimum score to consider titles matching.
         author_threshold: Minimum score to consider author last-names matching.
+        doi_lookup_issue: A registry miss or incomplete DOI lookup that must
+                         remain visible after a title-search fallback.
 
     Returns:
         Dict with keys: key, status, issues, source, match_score,
@@ -41,6 +44,7 @@ def compare_entry(
     bib_title = entry.get("title", "")
     bib_year = entry.get("year", "")
     bib_authors = entry.get("author", "")
+    bib_doi = entry.get("doi", "")
 
     if api_data is None:
         return {
@@ -51,9 +55,16 @@ def compare_entry(
             "match_score": 0,
             "bib_title": bib_title,
             "api_data": None,
+            "bib_doi": bib_doi,
+            "api_errors": api_errors or [],
         }
 
     issues: list[str] = []
+    if doi_lookup_issue:
+        issues.append(doi_lookup_issue)
+    if bib_doi and api_data.get("doi"):
+        if normalize_doi(bib_doi).casefold() != normalize_doi(api_data["doi"]).casefold():
+            issues.append(f"DOI 不匹配: bib={bib_doi}, 实际={api_data['doi']}")
 
     # ── Title ─────────────────────────────────────────────────────────────────
     if api_data.get("title"):
@@ -109,7 +120,7 @@ def compare_entry(
             )
 
     # ── Derive status ─────────────────────────────────────────────────────────
-    critical = [i for i in issues if "标题" in i or "作者姓氏" in i]
+    critical = [i for i in issues if "标题" in i or "作者姓氏" in i or i.startswith("DOI 不匹配")]
     if critical:
         status = "ERROR"
     elif issues:
@@ -125,4 +136,6 @@ def compare_entry(
         "match_score": match_score,
         "bib_title": bib_title,
         "api_data": api_data,
+        "bib_doi": bib_doi,
+        "api_errors": api_errors or [],
     }

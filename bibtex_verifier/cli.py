@@ -17,6 +17,7 @@ from bibtex_verifier.apis import (
     crossref_extract,
     datacite_by_doi,
     datacite_extract,
+    normalize_doi,
     normalize_title,
     oa_extract,
     oa_search,
@@ -125,6 +126,9 @@ def verify(
                     continue
                 if record:
                     api_data = extract(record)
+                    # A successful exact registry lookup establishes this DOI
+                    # even if a partial response omits the DOI field.
+                    api_data["doi"] = api_data.get("doi") or normalize_doi(bib_doi)
                     source = name.lower()
                     match_score = fuzz.token_sort_ratio(
                         normalize_title(bib_title), normalize_title(api_data["title"])
@@ -146,6 +150,13 @@ def verify(
         if source is None and not bib_title and not bib_doi:
             api_errors.append("缺少标题和 DOI，无法检索")
 
+        doi_lookup_issue = None
+        if bib_doi and source == "openalex":
+            if api_errors:
+                doi_lookup_issue = f"DOI 查询未完成：{'; '.join(api_errors)}"
+            else:
+                doi_lookup_issue = f"未能通过 DOI 查询核实标识符：{bib_doi}；检索命中不能替代 DOI 核验"
+
         result = compare_entry(
             entry,
             api_data=api_data,
@@ -154,6 +165,7 @@ def verify(
             title_threshold=title_threshold,
             author_threshold=author_threshold,
             api_errors=api_errors,
+            doi_lookup_issue=doi_lookup_issue,
         )
         results.append(result)
 
