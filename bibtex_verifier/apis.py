@@ -109,7 +109,9 @@ def extract_first_author_lastname(author_field: str) -> str:
 def normalize_doi(doi: str) -> str:
     """Accept bare DOIs and common resolver URLs without altering the suffix."""
     doi = re.sub(r"^doi:\s*", "", doi.strip(), flags=re.I)
-    return re.sub(r"^https?://(?:dx\.)?doi\.org/", "", doi, flags=re.I).strip()
+    if re.match(r"^https?://(?:dx\.)?doi\.org/", doi, re.I):
+        return urllib.parse.unquote(urllib.parse.urlsplit(doi).path[1:]).strip()
+    return doi
 
 
 # ── OpenAlex API ──────────────────────────────────────────────────────────────

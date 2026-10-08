@@ -82,3 +82,12 @@ def test_doi_lookup_failure_is_preserved_after_title_match(tmp_path):
 def test_doi_comparison_accepts_case_and_resolver_variations():
     result = compare_entry({"ID": "paper", "doi": "DOI: 10.1000/ABC", "title": "Paper", "author": "Ann Alice", "year": "2025"}, api_data={"title": "Paper", "doi": "https://doi.org/10.1000/abc", "authors": ["Ann Alice"], "year": 2025}, source="crossref", match_score=100)
     assert result["status"] == "OK"
+
+
+@pytest.mark.parametrize("value", ["https://doi.org/10.1038%2Fnature14539", f"https://doi.org/{DOI}?source=paper#references"])
+def test_resolver_url_path_is_decoded_without_query_or_fragment(value):
+    assert normalize_doi(value) == DOI
+
+
+def test_literal_percent_escape_in_a_bare_doi_is_preserved():
+    assert normalize_doi("10.1000/literal%2Fname") == "10.1000/literal%2Fname"
