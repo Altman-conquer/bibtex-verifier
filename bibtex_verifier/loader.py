@@ -4,7 +4,8 @@ from pathlib import Path
 
 import bibtexparser
 from bibtexparser.bparser import BibTexParser
-from bibtexparser.customization import convert_to_unicode
+
+from bibtex_verifier.names import unicode_entry
 
 
 def load_bib(path: Path) -> list[dict]:
@@ -22,7 +23,7 @@ def load_bib(path: Path) -> list[dict]:
     if not path.exists():
         raise FileNotFoundError(f"BibTeX file not found: {path}")
     parser = BibTexParser(common_strings=True)
-    parser.customization = convert_to_unicode
+    parser.customization = unicode_entry
     with open(path, encoding="utf-8") as f:
         db = bibtexparser.load(f, parser=parser)
     return db.entries

@@ -3,7 +3,8 @@
 import re
 import unicodedata
 
-from bibtexparser.customization import splitname
+from bibtexparser.customization import convert_to_unicode, splitname
+from bibtexparser.latexenc import latex_to_unicode
 
 
 def normalize_name(value: str) -> str:
@@ -29,12 +30,26 @@ def split_authors(value: str) -> list[str]:
     return parts
 
 
+def unicode_entry(record: dict) -> dict:
+    """Keep protected institution groups when normalizing a parsed author field."""
+    raw_authors = record.get("author", "")
+    record = convert_to_unicode(record)
+    if raw_authors:
+        record["author"] = " and ".join(
+            "{" + latex_to_unicode(name[1:-1]) + "}"
+            if name.startswith("{") and name.endswith("}")
+            else latex_to_unicode(name)
+            for name in split_authors(raw_authors)
+        )
+    return record
+
+
 def name_parts(value: str) -> tuple[str, list[str]]:
     if value.strip().startswith("{") and value.strip().endswith("}"):
         return normalize_name(value), []
     parsed = splitname(value, strict_mode=False)
     return normalize_name(" ".join(parsed["von"] + parsed["last"])), [
-        normalize_name(n) for n in parsed["first"]
+        token for n in parsed["first"] for token in normalize_name(n).split()
     ]
 
 
@@ -56,20 +71,41 @@ def same_person(left: str, right: str) -> bool:
 def author_checks(bib_authors: str, api_authors: list[str]) -> list[dict]:
     declared = split_authors(bib_authors)
     abbreviated = any(normalize_name(name) in {"others", "et al"} for name in declared)
-    declared = [name for name in declared if normalize_name(name) not in {"others", "et al"}]
-    remaining = list(enumerate(api_authors))
+    declared = [name for name in declared if name and normalize_name(name) not in {"others", "et al"}]
+    candidates = {
+        i: sorted(
+            [j for j, actual in enumerate(api_authors) if same_person(name, actual)],
+            key=lambda j: normalize_name(name) != normalize_name(api_authors[j]),
+        )
+        for i, name in enumerate(declared)
+    }
+    assigned = {}
+
+    def assign(i, visited):
+        for j in candidates[i]:
+            if j in visited:
+                continue
+            visited.add(j)
+            if j not in assigned or assign(assigned[j], visited):
+                assigned[j] = i
+                return True
+        return False
+
+    for i in range(len(declared)):
+        assign(i, set())
+    matched = {i: j for j, i in assigned.items()}
+    remaining = [(j, name) for j, name in enumerate(api_authors) if j not in assigned]
     matched_indices = []
     unmatched = []
     missing_given = []
-    for name in declared:
-        match = next(((i, actual) for i, actual in remaining if same_person(name, actual)), None)
-        if match is None:
+    for i, name in enumerate(declared):
+        if i not in matched:
             unmatched.append(name)
         else:
-            remaining.remove(match)
-            matched_indices.append(match[0])
-            if normalize_name(name) != normalize_name(match[1]) and (
-                not name_parts(name)[1] or not name_parts(match[1])[1]
+            actual = api_authors[matched[i]]
+            matched_indices.append(matched[i])
+            if normalize_name(name) != normalize_name(actual) and (
+                not name_parts(name)[1] or not name_parts(actual)[1]
             ):
                 missing_given.append(name)
     issues = []
@@ -85,6 +121,9 @@ def author_checks(bib_authors: str, api_authors: list[str]) -> list[dict]:
                 "message": message,
             }
         )
+
+    if not declared:
+        add("INPUT_AUTHORS_EMPTY", "warning", "作者声明没有任何可核验的作者姓名")
 
     if unmatched:
         add("AUTHOR_MISMATCH", "error", "作者列表不匹配：未匹配作者 " + "; ".join(unmatched))

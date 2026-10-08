@@ -3,6 +3,7 @@
 import pytest
 
 from bibtex_verifier.comparator import compare_entry
+from bibtex_verifier.loader import load_bib
 
 
 def compare(declared, actual, **kwargs):
@@ -57,3 +58,24 @@ def test_author_order_difference_is_a_review_item():
 
 def test_family_name_alone_does_not_establish_person_identity():
     assert compare("Smith", ["Alice Smith"])["status"] == "WARNING"
+
+
+@pytest.mark.parametrize("declared,actual", [("Smith, J.P.", ["John Paul Smith"]), ("Smith, J.-P.", ["Jean-Paul Smith"])])
+def test_compact_initials_match_the_corresponding_full_given_names(declared, actual):
+    assert compare(declared, actual)["status"] == "OK"
+
+
+def test_initial_match_does_not_consume_the_only_match_for_a_full_name():
+    assert compare("Smith, J. and Smith, John", ["John Smith", "Jane Smith"])["status"] == "WARNING"
+
+
+def test_truncation_without_an_actual_author_is_not_ok():
+    assert compare("others", ["Alice Smith"])["status"] == "WARNING"
+
+
+def test_corporate_author_survives_real_bibtex_parsing(tmp_path):
+    bib = tmp_path / "paper.bib"
+    bib.write_text('@article{org,title={Paper},author={{Research and Development Institute} and Smith, Alice},year={2025}}')
+    entry = load_bib(bib)[0]
+    result = compare_entry(entry, api_data={"title": "Paper", "authors": ["Research and Development Institute", "Alice Smith"], "year": 2025}, source="crossref", match_score=100)
+    assert result["status"] == "OK"

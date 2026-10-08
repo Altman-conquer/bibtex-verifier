@@ -5,7 +5,13 @@ from typing import Optional
 from rapidfuzz import fuzz
 
 from bibtex_verifier.apis import normalize_title
-from bibtex_verifier.names import author_issues, name_parts, same_person, split_authors
+from bibtex_verifier.names import (
+    author_issues,
+    name_parts,
+    normalize_name,
+    same_person,
+    split_authors,
+)
 
 # Default thresholds (can be overridden per call)
 DEFAULT_TITLE_THRESHOLD = 82
@@ -91,7 +97,7 @@ def compare_entry(
         api_first_lastname = name_parts(api_data["authors"][0])[0]
         a_score = fuzz.ratio(bib_first, api_first_lastname)
         first_declared = split_authors(bib_authors)[0]
-        if a_score < author_threshold and not same_person(first_declared, api_data["authors"][0]):
+        if normalize_name(first_declared) not in {"", "others", "et al"} and a_score < author_threshold and not same_person(first_declared, api_data["authors"][0]):
             if any(
                 name_parts(name)[0] == bib_first
                 for name in api_data["authors"][1:]
