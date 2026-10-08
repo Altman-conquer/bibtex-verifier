@@ -98,6 +98,7 @@ def save_report(
         output_path: Destination .md file path.
         save_json: If True, also write a .json file alongside the report.
     """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     md = build_markdown_report(results, bib_filename=bib_filename)
     output_path.write_text(md, encoding="utf-8")
 
