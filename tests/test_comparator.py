@@ -82,6 +82,6 @@ def test_compare_custom_thresholds():
         api_data=API_DATA,
         source="openalex",
         match_score=98,
-        author_threshold=10,  # very low threshold - should pass
+        author_threshold=10,  # explicit author conflicts cannot be relaxed by a fuzzy threshold
     )
-    assert result["status"] == "OK"
+    assert result["status"] == "ERROR"
