@@ -63,3 +63,28 @@ def test_clean_cli_preserves_results_list_and_marks_complete(tmp_path):
     assert invocation.exit_code == 0
     assert isinstance(json.loads(bib.with_suffix(".report.json").read_text()), list)
     assert json.loads(bib.with_suffix(".report.coverage.json").read_text())["input_complete"]
+
+
+def test_damage_after_free_text_is_not_silently_ignored(tmp_path):
+    bib = tmp_path / "paper.bib"
+    bib.write_text(BIB + "a note @article{broken,title={Never closed")
+    parsed = inspect_bib(bib)
+    assert [entry["ID"] for entry in parsed.entries] == ["real"]
+    assert any(item["code"] == "UNPARSED_ENTRY" for item in parsed.diagnostics)
+
+
+def test_comment_examples_do_not_become_references_or_change_source_lines(tmp_path):
+    bib = tmp_path / "paper.bib"
+    bib.write_text('@comment{\n@article{example,title={Ignore this template}}\n}\n% @article{line,title={Ignore too}}\n' + BIB)
+    parsed = inspect_bib(bib)
+    assert not parsed.diagnostics
+    assert [entry["ID"] for entry in parsed.entries] == ["real"]
+    assert parsed.entries[0]["_source_line"] == 5
+
+
+def test_comment_like_text_inside_fields_is_preserved(tmp_path):
+    bib = tmp_path / "paper.bib"
+    bib.write_text('@article{real,title={A 50% effect with @comment text},author={Alice Smith},year={2025}}')
+    parsed = inspect_bib(bib)
+    assert not parsed.diagnostics
+    assert parsed.entries[0]["title"] == "A 50% effect with @comment text"
