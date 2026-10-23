@@ -24,7 +24,7 @@ from bibtex_verifier.apis import (
     set_polite_email,
 )
 from bibtex_verifier.comparator import compare_entry
-from bibtex_verifier.loader import load_bib
+from bibtex_verifier.loader import inspect_bib
 from bibtex_verifier.report import save_report
 
 app = typer.Typer(
@@ -84,14 +84,17 @@ def verify(
     console.print(f"Parsing [cyan]{bib_file}[/cyan] ...")
 
     try:
-        entries = load_bib(bib_file)
-    except FileNotFoundError as exc:
+        parsed = inspect_bib(bib_file)
+        entries = parsed.entries
+    except (OSError, UnicodeError) as exc:
         console.print(f"[red]Error:[/red] {exc}")
         raise typer.Exit(1)
 
     if not entries:
         console.print("[yellow]No entries found in the .bib file.[/yellow]")
-        raise typer.Exit(0)
+
+    for diagnostic in parsed.diagnostics:
+        console.print(f"[yellow]{diagnostic['code']}: {diagnostic['message']}[/yellow]")
 
     console.print(f"Found [bold]{len(entries)}[/bold] entries\n")
 
@@ -184,6 +187,7 @@ def verify(
         bib_filename=bib_file.name,
         output_path=output,
         save_json=save_json,
+        diagnostics=parsed.diagnostics,
     )
 
     console.print(f"\n[bold green]Done![/bold green] Report saved to [cyan]{output}[/cyan]")
@@ -207,5 +211,5 @@ def verify(
     table.add_row("[yellow]⏳ UNVERIFIED[/yellow]", f"[yellow]{unverified}[/yellow]")
     console.print(table)
 
-    if err + nf + unverified > 0:
+    if err + nf + unverified > 0 or parsed.diagnostics:
         raise typer.Exit(1)

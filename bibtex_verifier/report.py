@@ -2,12 +2,15 @@
 
 import json
 from pathlib import Path
+from typing import Optional
 from urllib.parse import quote
 
 from bibtex_verifier.apis import normalize_doi
 
 
-def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
+def build_markdown_report(
+    results: list[dict], *, bib_filename: str, diagnostics: Optional[list[dict]] = None
+) -> str:
     """Build a Markdown verification report from a list of result dicts.
 
     Args:
@@ -39,6 +42,18 @@ def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
         f"| ⏳ 未完成核验 (UNVERIFIED) | {len(unverified)} |",
         "",
     ]
+
+    if diagnostics is not None:
+        complete = bool(results) and not diagnostics
+        lines += [
+            "## 输入解析覆盖",
+            "",
+            f"解析覆盖完整：{'是' if complete else '否'}；核验 {len(results)} 条。",
+            "",
+        ]
+        for diagnostic in diagnostics:
+            lines.append(f"- `{diagnostic['code']}`：{diagnostic['message']}")
+        lines.append("")
 
     def _section(title_str: str, items: list[dict], icon: str) -> None:
         if not items:
@@ -97,6 +112,7 @@ def save_report(
     bib_filename: str,
     output_path: Path,
     save_json: bool = False,
+    diagnostics: Optional[list[dict]] = None,
 ) -> None:
     """Write the Markdown report (and optionally JSON) to disk.
 
@@ -107,13 +123,27 @@ def save_report(
         save_json: If True, also write a .json file alongside the report.
     """
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    md = build_markdown_report(results, bib_filename=bib_filename)
+    md = build_markdown_report(results, bib_filename=bib_filename, diagnostics=diagnostics)
     output_path.write_text(md, encoding="utf-8")
 
     if save_json:
         json_path = output_path.with_suffix(".json")
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
+        if diagnostics is not None:
+            coverage_path = output_path.with_suffix(".coverage.json")
+            coverage_path.write_text(
+                json.dumps(
+                    {
+                        "input_complete": bool(results) and not diagnostics,
+                        "checked_entries": len(results),
+                        "diagnostics": diagnostics,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
 
 
 def print_summary(results: list[dict]) -> None:
