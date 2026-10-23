@@ -137,6 +137,11 @@ bibverify paper.bib --email you@university.edu
 bibverify paper.bib --title-threshold 85 --author-threshold 70
 ```
 
+In the CLI, a successful title search does not clear a failed DOI lookup. DOI
+conflicts are reported as `ERROR`; unresolved DOI lookups remain `WARNING`, with
+the input identifier and matched DOI included in the reports. Bare DOIs and
+`doi.org` resolver URLs are accepted.
+
 #### All Options / 参数说明
 
 | Option | Default | Description |

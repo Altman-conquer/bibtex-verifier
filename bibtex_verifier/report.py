@@ -2,6 +2,9 @@
 
 import json
 from pathlib import Path
+from urllib.parse import quote
+
+from bibtex_verifier.apis import normalize_doi
 
 
 def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
@@ -45,6 +48,8 @@ def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
         for r in items:
             lines.append(f"### `{r['key']}`")
             lines.append(f"- **标题 (bib)**: {r['bib_title']}")
+            if r.get("bib_doi"):
+                lines.append(f"- **DOI (bib)**: {r['bib_doi']}")
             if r.get("api_data"):
                 ad = r["api_data"]
                 source_label = (r.get("source") or "").upper()
@@ -62,6 +67,9 @@ def build_markdown_report(results: list[dict], *, bib_filename: str) -> str:
                     lines.append(f"- **作者 (API)**: {authors_str}")
                 if ad.get("venue"):
                     lines.append(f"- **发表场所 (API)**: {ad['venue']}")
+                if ad.get("doi"):
+                    doi = normalize_doi(ad["doi"])
+                    lines.append(f"- **DOI (API)**: [{doi}](https://doi.org/{quote(doi, safe='/')})")
             elif r.get("source"):
                 lines.append(
                     f"- **验证来源**: {r['source'].upper()} (标题匹配度 {int(r['match_score'])}%)"

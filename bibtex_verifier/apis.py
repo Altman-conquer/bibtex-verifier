@@ -106,6 +106,14 @@ def extract_first_author_lastname(author_field: str) -> str:
     return normalize_lastname(parts[-1]) if parts else ""
 
 
+def normalize_doi(doi: str) -> str:
+    """Accept bare DOIs and common resolver URLs without altering the suffix."""
+    doi = re.sub(r"^doi:\s*", "", doi.strip(), flags=re.I)
+    if re.match(r"^https?://(?:dx\.)?doi\.org/", doi, re.I):
+        return urllib.parse.unquote(urllib.parse.urlsplit(doi).path[1:]).strip()
+    return doi
+
+
 # ── OpenAlex API ──────────────────────────────────────────────────────────────
 
 
@@ -165,7 +173,7 @@ def oa_extract(paper: dict) -> dict:
 
 def crossref_by_doi(doi: str) -> Optional[dict]:
     """Fetch CrossRef metadata, or None if the DOI is not registered there."""
-    doi_encoded = urllib.parse.quote(doi.strip(), safe="")
+    doi_encoded = urllib.parse.quote(normalize_doi(doi), safe="")
     data = http_get(f"{CR_URL}{doi_encoded}")
     if data is None:
         return None
@@ -192,7 +200,7 @@ def crossref_extract(msg: dict) -> dict:
     ]
     container = msg.get("container-title", [])
     venue = container[0] if container else ""
-    return {"title": title, "year": year, "authors": authors, "venue": venue}
+    return {"title": title, "year": year, "authors": authors, "venue": venue, "doi": msg.get("DOI", "")}
 
 
 # ── DataCite DOI API ──────────────────────────────────────────────────────────
@@ -200,7 +208,7 @@ def crossref_extract(msg: dict) -> dict:
 
 def datacite_by_doi(doi: str) -> Optional[dict]:
     """Fetch metadata for a DOI registered with DataCite."""
-    data = http_get(f"{DC_URL}{urllib.parse.quote(doi.strip(), safe='/')}")
+    data = http_get(f"{DC_URL}{urllib.parse.quote(normalize_doi(doi), safe='/')}")
     if data is None:
         return None
     attrs = data.get("data", {}).get("attributes")
