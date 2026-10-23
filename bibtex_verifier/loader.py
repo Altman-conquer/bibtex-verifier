@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bibtexparser.bparser import BibTexParser
-from bibtexparser.customization import convert_to_unicode
+
+from bibtex_verifier.names import unicode_entry
 
 
 @dataclass
@@ -76,7 +77,7 @@ def inspect_bib(path: Path) -> BibInput:
     text = path.read_text(encoding="utf-8-sig")
     parsed_text = mask_bib_comments(text)
     parser = BibTexParser(common_strings=True, ignore_nonstandard_types=False)
-    parser.customization = convert_to_unicode
+    parser.customization = unicode_entry
     diagnostics = []
     try:
         db = parser.parse(parsed_text)

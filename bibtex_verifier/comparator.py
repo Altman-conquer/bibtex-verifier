@@ -5,7 +5,14 @@ from typing import Optional
 
 from rapidfuzz import fuzz
 
-from bibtex_verifier.apis import extract_first_author_lastname, normalize_doi, normalize_title
+from bibtex_verifier.apis import normalize_doi, normalize_title
+from bibtex_verifier.names import (
+    author_issues,
+    name_parts,
+    normalize_name,
+    same_person,
+    split_authors,
+)
 
 # Default thresholds (can be overridden per call)
 DEFAULT_TITLE_THRESHOLD = 82
@@ -121,12 +128,14 @@ def compare_entry(
 
     # ── First-author last name ────────────────────────────────────────────────
     if api_data.get("authors") and bib_authors:
-        bib_first = extract_first_author_lastname(bib_authors)
-        api_first_lastname = extract_first_author_lastname(api_data["authors"][0])
+        issues.extend(author_issues(bib_authors, api_data["authors"]))
+        bib_first = name_parts(split_authors(bib_authors)[0])[0]
+        api_first_lastname = name_parts(api_data["authors"][0])[0]
         a_score = fuzz.ratio(bib_first, api_first_lastname)
-        if a_score < author_threshold:
+        first_declared = split_authors(bib_authors)[0]
+        if normalize_name(first_declared) not in {"", "others", "et al"} and a_score < author_threshold and not same_person(first_declared, api_data["authors"][0]):
             if any(
-                extract_first_author_lastname(name) == bib_first
+                name_parts(name)[0] == bib_first
                 for name in api_data["authors"][1:]
             ):
                 issues.append("数据库第一作者与 bib 不同，但 bib 第一作者见于数据库作者列表（可能为团队署名或版本差异）")
@@ -135,18 +144,10 @@ def compare_entry(
                     f"第一作者姓氏不匹配: bib={bib_first!r}, 实际={api_first_lastname!r} (相似度 {a_score}%)"
                 )
 
-        # ── Author count ──────────────────────────────────────────────────────
-        bib_count = len(re.split(r"\s+and\s+", bib_authors, flags=re.I))
-        api_count = len(api_data["authors"])
-        if api_count > bib_count + 1 and "others" not in bib_authors.lower():
-            issues.append(
-                f"作者数量少于实际: bib={bib_count} 人, 实际={api_count} 人"
-            )
-
     # ── Derive status ─────────────────────────────────────────────────────────
     critical = [
         i for i in issues
-        if i.startswith(("标题不匹配", "第一作者姓氏不匹配", "DOI 不匹配"))
+        if i.startswith(("标题不匹配", "第一作者姓氏不匹配", "DOI 不匹配", "作者列表不匹配"))
     ]
     if critical:
         status = "ERROR"

@@ -30,3 +30,13 @@ def test_nested_output_keeps_coverage_diagnostics(tmp_path):
     coverage = json.loads(output.with_suffix(".coverage.json").read_text(encoding="utf-8"))
     assert coverage["input_complete"] is False
     assert coverage["diagnostics"] == diagnostics
+
+
+def test_author_conflict_stays_error_when_source_year_is_missing():
+    result = compare_entry(
+        {"ID": "paper", "title": "Paper", "year": "2025", "author": "Smith, Alice"},
+        api_data={"title": "Paper", "authors": ["Bob Smith"]},
+        source="crossref", match_score=100, author_threshold=0,
+    )
+    assert result["status"] == "ERROR"
+    assert any(issue.startswith("作者列表不匹配") for issue in result["issues"])
