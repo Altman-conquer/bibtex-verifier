@@ -12,6 +12,10 @@ DEFAULT_TITLE_THRESHOLD = 82
 DEFAULT_AUTHOR_THRESHOLD = 72
 
 
+def valid_year(value) -> bool:
+    return bool(re.fullmatch(r"\d{4}", str(value).strip())) and int(value) > 0
+
+
 def compare_entry(
     entry: dict,
     *,
@@ -65,9 +69,28 @@ def compare_entry(
     if bib_doi and api_data.get("doi"):
         if normalize_doi(bib_doi).casefold() != normalize_doi(api_data["doi"]).casefold():
             issues.append(f"DOI 不匹配: bib={bib_doi}, 实际={api_data['doi']}")
+    paper = entry.get("ENTRYTYPE", "article") in {"article", "inproceedings", "incollection"}
+    missing_source = []
+    if not api_data.get("title"):
+        missing_source.append("标题")
+    if paper and not api_data.get("authors"):
+        missing_source.append("作者")
+    if paper and not api_data.get("year"):
+        missing_source.append("年份")
+    elif api_data.get("year"):
+        if not valid_year(api_data["year"]):
+            missing_source.append("有效年份")
+    issues.extend(f"来源元数据缺少{field}，无法完成核验" for field in missing_source)
+    if not bib_title:
+        issues.append("bib 中缺少标题字段")
+    if paper and not bib_authors:
+        issues.append("bib 中缺少作者字段")
+    if bib_year:
+        if not valid_year(bib_year):
+            issues.append(f"年份格式无效：{bib_year}")
 
     # ── Title ─────────────────────────────────────────────────────────────────
-    if api_data.get("title"):
+    if api_data.get("title") and bib_title:
         t_score = fuzz.token_sort_ratio(
             normalize_title(bib_title), normalize_title(api_data["title"])
         )
@@ -90,8 +113,9 @@ def compare_entry(
                 issues.append(
                     f"年份偏差 1 年 (可能是预印本 vs 正式发表): bib={bib_year}, 实际={api_data['year']}"
                 )
-        except ValueError:
-            pass
+        except (ValueError, TypeError):
+            if not any(issue.startswith("年份格式无效") for issue in issues):
+                issues.append(f"来源年份格式无效：{api_data['year']}")
     elif api_data.get("year") and not bib_year:
         issues.append(f"bib 中缺少年份字段，API 显示为 {api_data['year']}")
 
@@ -120,13 +144,18 @@ def compare_entry(
             )
 
     # ── Derive status ─────────────────────────────────────────────────────────
-    critical = [i for i in issues if "标题" in i or "作者姓氏" in i or i.startswith("DOI 不匹配")]
+    critical = [
+        i for i in issues
+        if i.startswith(("标题不匹配", "第一作者姓氏不匹配", "DOI 不匹配"))
+    ]
     if critical:
         status = "ERROR"
     elif issues:
         status = "WARNING"
     else:
         status = "OK"
+    if missing_source and not critical:
+        status = "UNVERIFIED"
 
     return {
         "key": key,
